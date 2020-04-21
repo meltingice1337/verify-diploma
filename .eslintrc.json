@@ -1,0 +1,75 @@
+/*
+  Rules Severity 
+    - 0 = off
+    - 1 = warn
+    - 2 = error
+*/
+{
+    "env": {
+        "es6": true,
+        "browser": true,
+        "jasmine": true,
+        "jest": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "project": "./tsconfig.json",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "@typescript-eslint"
+    ],
+    "rules": {
+        // Javascript Specific Rules That Are Applied To Typescript Too
+        "no-console": 1,
+        "no-debugger": 1,
+        "quotes": [
+            2,
+            "single"
+        ],
+        "semi": 2,
+        // Typescript Specific Rules From This Point On
+        "@typescript-eslint/camelcase": 0,
+        "@typescript-eslint/explicit-function-return-type": 2,
+        "@typescript-eslint/no-explicit-any": 2,
+        "@typescript-eslint/no-inferrable-types": 2,
+        "@typescript-eslint/no-non-null-assertion": 0,
+        "@typescript-eslint/no-unused-vars": 1,
+        "@typescript-eslint/require-await": 0,
+        "@typescript-eslint/unbound-method": [
+            "error",
+            {
+                "ignoreStatic": true
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": [
+                "**/*.tsx"
+            ],
+            "rules": {
+                "react/prop-types": "off",
+                "react/display-name": "off"
+            }
+        }
+    ],
+    "settings": {
+        "react": {
+            "pragma": "React",
+            "version": "detect"
+        }
+    },
+    "ignorePatterns": [
+        "webpack.config.js"
+    ]
+}
