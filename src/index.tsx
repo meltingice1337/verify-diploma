@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
+import '../public/styles/main.scss';
 
 toast.configure();
 
