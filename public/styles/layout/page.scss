@@ -1,3 +1,5 @@
+@import '../utils/variables.scss';
+
 html,
 body,
 main {
@@ -6,7 +8,7 @@ main {
 }
 
 .full-page-wrapper {
-	background-color: silver;
+	background-color: $athens-gray;
 	height: 100%;
 	display: flex;
 	align-items: center;
