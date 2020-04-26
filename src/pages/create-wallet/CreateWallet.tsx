@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 
+import { BITBOX } from 'bitbox-sdk';
+
 import logo from '../../../public/assets/logo.png';
 
 import styles from './CreateWallet.module.scss';
+
+const bitbox = new BITBOX();
 
 const CreateWallet = (): JSX.Element => {
     const [activeStep, setActiveStep] = useState(1);
@@ -12,7 +16,7 @@ const CreateWallet = (): JSX.Element => {
             <>
                 <h4 className="mb-2">Passphrase</h4>
                 <div className={styles.passphraseContainer}>
-                    <p>Some quick example text to build on the card title and make up the bulk of the cad content.</p>
+                    <p>{bitbox.Mnemonic.generate()}</p>
                 </div>
                 <a href="#" className="card-link mt-1">Copy to clipboard</a>
             </>

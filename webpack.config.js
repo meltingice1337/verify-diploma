@@ -50,8 +50,7 @@ const config = {
 				]
 			},
 			{
-				exclude: /node_modules/,
-				include: appSourcePath,
+				include: [ appSourcePath, path.join(__dirname, 'node_modules/bitbox-sdk/') ],
 				test: /\.(js|jsx|mjs|ts|tsx)$/,
 				use: [
 					{
@@ -133,7 +132,7 @@ const config = {
 		new FriendlyErrorsWebpackPlugin(),
 		new HtmlWebpackPlugin({
 			template: './public/index.html'
-		}),
+		})
 	]
 };
 

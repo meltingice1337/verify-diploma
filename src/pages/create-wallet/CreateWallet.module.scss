@@ -1,8 +1,10 @@
 @import '../../../public/styles/utils/variables.scss';
 
 .passphraseContainer {
-    padding: 1.5rem;
-    border: 0.1rem solid $athens-gray;
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 1.4rem;
+	padding: 1.5rem;
+	border: 0.1rem solid $athens-gray;
+	letter-spacing: 0.1rem;
+	word-spacing: 0.5rem;
+	line-height: 2rem;
+	font-size: 1.6rem;
 }
