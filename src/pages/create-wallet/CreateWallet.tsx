@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, MouseEvent } from 'react';
 
 import { BITBOX } from 'bitbox-sdk';
 
@@ -9,16 +9,32 @@ import styles from './CreateWallet.module.scss';
 const bitbox = new BITBOX();
 
 const CreateWallet = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(1);
+    const [activeStep, setActiveStep] = useState(2);
+    const [mnemonic, setMnemonic] = useState(bitbox.Mnemonic.generate());
+
+    const onCopyPassphraseClick = (event: MouseEvent): void => {
+        event.preventDefault();
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = mnemonic;
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        document.execCommand('copy');
+
+        input.hidden = true;
+    };
 
     const renderPassphrase = (): JSX.Element => {
         return (
             <>
                 <h4 className="mb-2">Passphrase</h4>
                 <div className={styles.passphraseContainer}>
-                    <p>{bitbox.Mnemonic.generate()}</p>
+                    <p>{mnemonic}</p>
+                    <a href="#" className="card-link mt-3" onClick={onCopyPassphraseClick}>Copy to clipboard</a>
                 </div>
-                <a href="#" className="card-link mt-1">Copy to clipboard</a>
+                <p className="my-3" >Write this down on a piece of paper or save it in the cloud as if this contains your account information and if you loose this you will not be able to recover your wallet</p>
             </>
         );
     };
@@ -33,11 +49,29 @@ const CreateWallet = (): JSX.Element => {
         );
     };
 
+    const renderVerify = (): JSX.Element => {
+        const [worldNumberVerify] = useState({ first: (Math.random() * 11) % 11 + 1, second: (Math.random() * 11) % 11 + 1 });
+
+        return (
+            <>
+                <div className="form-group">
+                    <label htmlFor="exampleInputEmail1">Word {worldNumberVerify.first}</label>
+                    <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="exampleInputEmail1">Word {worldNumberVerify.second}</label>
+                    <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" />
+                </div>     </>
+        );
+    };
+
     const renderStep = (): JSX.Element | null => {
         if (activeStep === 0) {
             return renderGenerating();
         } else if (activeStep === 1) {
             return renderPassphrase();
+        } else if (activeStep === 2) {
+            return renderVerify();
         }
         return null;
     };
