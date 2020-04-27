@@ -11,7 +11,7 @@ const Authentication = (): JSX.Element => {
                     <h2 className="ml-4">Verify Diploma</h2>
                 </div>
                 <div className="col mt-5 d-flex flex-column justify-content-center">
-                  <button className="btn btn-primary btn-block btn-lg">Login wallet</button>
+                  <button className="btn btn-primary btn-block btn-lg">Open wallet</button>
                   <button className="btn btn-primary btn-block btn-lg mt-4">Create wallet</button>
                 </div>
             </div>
