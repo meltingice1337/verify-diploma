@@ -1,16 +1,23 @@
-import React, { useState, useRef, MouseEvent } from 'react';
+import React, { useState, MouseEvent, FormEvent, ChangeEvent } from 'react';
+import PinInput from 'react-pin-input';
+import { } from 'crypto';
 
 import { BITBOX } from 'bitbox-sdk';
 
 import logo from '../../../public/assets/logo.png';
 
+import { generateRandomBetween } from '@utils/Random';
+
 import styles from './CreateWallet.module.scss';
+import { AES } from '@utils/Crypto';
 
 const bitbox = new BITBOX();
 
 const CreateWallet = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(2);
-    const [mnemonic, setMnemonic] = useState(bitbox.Mnemonic.generate());
+    const [activeStep, setActiveStep] = useState(3);
+    const [mnemonic] = useState(bitbox.Mnemonic.generate());
+    const [worldNumberVerify] = useState({ first: generateRandomBetween(6, 1), second: generateRandomBetween(12, 6) });
+    const [verifyForm, setVerifyForm] = useState({ first: '', second: '' });
 
     const onCopyPassphraseClick = (event: MouseEvent): void => {
         event.preventDefault();
@@ -35,6 +42,7 @@ const CreateWallet = (): JSX.Element => {
                     <a href="#" className="card-link mt-3" onClick={onCopyPassphraseClick}>Copy to clipboard</a>
                 </div>
                 <p className="my-3" >Write this down on a piece of paper or save it in the cloud as if this contains your account information and if you loose this you will not be able to recover your wallet</p>
+                <button className="btn btn-primary btn-lg" onClick={(): void => setActiveStep(activeStep + 1)}>I HAVE WRITTEN THIS DOWN. Continue</button>
             </>
         );
     };
@@ -50,18 +58,55 @@ const CreateWallet = (): JSX.Element => {
     };
 
     const renderVerify = (): JSX.Element => {
-        const [worldNumberVerify] = useState({ first: (Math.random() * 11) % 11 + 1, second: (Math.random() * 11) % 11 + 1 });
+
+        const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+            setVerifyForm({ ...verifyForm, [event.target.name]: event.target.value.trim() });
+        };
+
+        const onSubmitVerify = (event: FormEvent<HTMLFormElement>): void => {
+            event.preventDefault();
+
+            const mnemonicArray = mnemonic.split(' ');
+            if (mnemonicArray[worldNumberVerify.first - 1] === verifyForm.first && mnemonicArray[worldNumberVerify.second - 1] === verifyForm.second) {
+                setActiveStep(activeStep + 1);
+            } else {
+                alert('the words don`t match, please check again !');
+            }
+        };
 
         return (
-            <>
+            <form onSubmit={onSubmitVerify}>
                 <div className="form-group">
-                    <label htmlFor="exampleInputEmail1">Word {worldNumberVerify.first}</label>
-                    <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" />
+                    <label htmlFor="firstWord">Word {worldNumberVerify.first}</label>
+                    <input required name="first" className="form-control" id="firstWord" onChange={onInputChange} value={verifyForm.first} placeholder={`Enter word #${worldNumberVerify.first}`} />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="exampleInputEmail1">Word {worldNumberVerify.second}</label>
-                    <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" />
-                </div>     </>
+                    <label htmlFor="secondWord">Word {worldNumberVerify.second}</label>
+                    <input required name="second" className="form-control" id="secondWord" onChange={onInputChange} value={verifyForm.second} placeholder={`Enter word #${worldNumberVerify.second}`} />
+                </div>
+
+                <button className="btn btn-primary btn-lg btn-block" type="submit">Continue</button>
+            </form>
+        );
+    };
+
+    const renderPinSetup = (): JSX.Element | null => {
+        const encrypt = AES.encrypt('test', '123');
+        console.log({ encrypt });
+        const decrypt = AES.decrypt(encrypt, '123');
+        console.log({ decrypt });
+        return (
+            <>
+                <div className="d-flex justify-content-center">
+                    <PinInput
+                        length={4}
+                        focus
+                        inputStyle={{ borderRadius: '0.4rem', fontSize: '1.6rem' }}
+                    />
+                </div>
+                <p className="mt-3">Enter an input for protecting your browser saved wallet. (Beware that the wallet will be encrypted so this pin does not have a recovery feature)</p>
+                <button className="btn btn-primary btn-lg mt-3">Continue</button>
+            </>
         );
     };
 
@@ -72,7 +117,10 @@ const CreateWallet = (): JSX.Element => {
             return renderPassphrase();
         } else if (activeStep === 2) {
             return renderVerify();
+        } else if (activeStep === 3) {
+            return renderPinSetup();
         }
+
         return null;
     };
 
