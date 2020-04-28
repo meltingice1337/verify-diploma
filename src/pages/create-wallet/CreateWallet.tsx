@@ -7,9 +7,9 @@ import { BITBOX } from 'bitbox-sdk';
 import logo from '../../../public/assets/logo.png';
 
 import { generateRandomBetween } from '@utils/Random';
+import { AES } from '@utils/Crypto';
 
 import styles from './CreateWallet.module.scss';
-import { AES } from '@utils/Crypto';
 
 const bitbox = new BITBOX();
 
