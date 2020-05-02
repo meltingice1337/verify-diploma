@@ -1,9 +1,21 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { RouteComponentProps, Route, RouteProps, Switch } from 'react-router-dom';
+import { BITBOX, TREST_URL } from 'bitbox-sdk';
 
 import { routes } from './routes';
 
+import { BitboxProvider } from '@contexts/BitboxContext';
+import { WalletProvider, WalletData } from '@contexts/WalletContext';
+
 const App = (): JSX.Element => {
+    const [walletData, setWalletData] = useState<WalletData>();
+    const [bitbox] = useState(new BITBOX({ restURL: TREST_URL }));
+
+    const setWallet = (mnemonic: string): void => {
+        const seed = bitbox.Mnemonic.toSeed(mnemonic);
+        const masterNode = bitbox.HDNode.fromSeed(seed, 'testnet');
+        setWalletData({ masterNode });
+    };
 
     const renderRouteWithProps = (
         Component: React.ComponentClass,
@@ -37,9 +49,13 @@ const App = (): JSX.Element => {
 
     return (
         <Suspense fallback={<div>Loading</div>}>
-            <Switch>
-                {renderRoutes()}
-            </Switch>
+            <BitboxProvider value={{ bitbox }} >
+                <WalletProvider value={{ wallet: walletData, setWallet }}>
+                    <Switch>
+                        {renderRoutes()}
+                    </Switch>
+                </WalletProvider>
+            </BitboxProvider>
         </Suspense>
     );
 };
