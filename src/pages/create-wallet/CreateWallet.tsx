@@ -1,20 +1,24 @@
-import React, { useState, MouseEvent, FormEvent, ChangeEvent } from 'react';
+import React, { useState, MouseEvent, FormEvent, ChangeEvent, useContext } from 'react';
 import PinInput from 'react-pin-input';
 import { writeStorage } from '@rehooks/local-storage';
-
-import { BITBOX } from 'bitbox-sdk';
+import { toast } from 'react-toastify';
 
 import logo from '../../../public/assets/logo.png';
+
+import BitboxContext from '@contexts/BitboxContext';
+import WalletContext from '@contexts/WalletContext';
 
 import { generateRandomBetween } from '@utils/Random';
 import { AES } from '@utils/Crypto';
 
 import styles from './CreateWallet.module.scss';
 
-const bitbox = new BITBOX();
-
 const CreateWallet = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(3);
+
+    const { bitbox } = useContext(BitboxContext);
+    const { setWallet } = useContext(WalletContext);
+
+    const [activeStep, setActiveStep] = useState(0);
     const [mnemonic] = useState(bitbox.Mnemonic.generate());
     const [worldNumberVerify] = useState({ first: generateRandomBetween(6, 1), second: generateRandomBetween(12, 6) });
     const [verifyForm, setVerifyForm] = useState({ first: '', second: '' });
@@ -62,6 +66,7 @@ const CreateWallet = (): JSX.Element => {
         if (pin?.length === 4) {
             const encWallet = AES.encrypt(mnemonic, pin);
             writeStorage('wallet', encWallet);
+            setWallet(mnemonic);
         }
     };
 
@@ -78,7 +83,7 @@ const CreateWallet = (): JSX.Element => {
             if (mnemonicArray[worldNumberVerify.first - 1] === verifyForm.first && mnemonicArray[worldNumberVerify.second - 1] === verifyForm.second) {
                 setActiveStep(activeStep + 1);
             } else {
-                alert('the words don`t match, please check again !');
+                toast.error('the words don`t match, please check again !');
             }
         };
 
