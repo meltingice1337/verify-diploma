@@ -21,8 +21,7 @@ const decrypt = (encrypted: string, passphrase: string): string | null => {
         let decrypted = decipher.update(encryptedData);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();
-    }
-    catch {
+    } catch {
         return null;
     }
 };

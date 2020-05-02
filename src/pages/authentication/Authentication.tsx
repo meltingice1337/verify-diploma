@@ -29,7 +29,6 @@ const Authentication = (): JSX.Element => {
 
             if (decrypted) {
                 setWallet(decrypted);
-                console.log({ decrypted });
             } else {
                 toast.error('Invalid pin ! Please try again ...');
             }
