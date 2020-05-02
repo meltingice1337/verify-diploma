@@ -1,8 +1,10 @@
 import { createContext } from 'react';
 import { HDNode } from 'bitcoincashjs-lib';
+import { AddressDetailsResult } from 'bitcoin-com-rest';
 
 export interface WalletData {
-    masterNode: HDNode;
+    account: HDNode;
+    addressDetails: AddressDetailsResult;
 }
 
 interface WalletContextValue {

@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
+
+import WalletContext from '@contexts/WalletContext';
+
 import logo from '../../../public/assets/logo.png';
 
 export const Header = (): JSX.Element => {
+    const { wallet } = useContext(WalletContext);
+
     return (
         <nav className="navbar navbar-light bg-light">
             <a className="navbar-brand">
@@ -10,9 +15,9 @@ export const Header = (): JSX.Element => {
             </a>
             <div className="navbar-nav ml-auto mr-auto flex-row">
                 Your address:
-        <strong className="ml-2">38ty1qB68gHsiyZ8k3RPeCJ1wYQPrUCPPr</strong>
+                <strong className="ml-2">{wallet!.account.getAddress()}</strong>
             </div>
-            <div className="navbar-nav"> Balance: 20.20 BCH</div>
+            <div className="navbar-nav flex-row">Balance: <strong className="ml-2">{wallet!.addressDetails.balance.toFixed(8)} BCH</strong></div>
         </nav>
     );
 };

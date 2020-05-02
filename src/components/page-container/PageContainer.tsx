@@ -1,14 +1,20 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useContext } from 'react';
 
 import { Header } from '@components/header/Header';
+import WalletContext from '@contexts/WalletContext';
 
-export const PageContainer = (props: PropsWithChildren<{}>): JSX.Element => {
-    return (
-        <>
-            <Header />
-            <div className="container-fluid">
-                {props.children}
-            </div>
-        </>
-    );
+export const PageContainer = (props: PropsWithChildren<{}>): JSX.Element | null => {
+    const { wallet } = useContext(WalletContext);
+
+    if (wallet) {
+        return (
+            <>
+                <Header />
+                <div className="container-fluid">
+                    {props.children}
+                </div>
+            </>
+        );
+    }
+    return null;
 };
