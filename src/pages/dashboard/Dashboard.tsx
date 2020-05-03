@@ -5,7 +5,7 @@ import { PageContainer } from '@components/page-container/PageContainer';
 const Dashboard = (): JSX.Element => {
     return (
         <PageContainer>
-            test la tes
+            Generate new certificate
         </PageContainer>
 
     );

@@ -2,25 +2,30 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { RouteComponentProps, Route, RouteProps, Switch } from 'react-router-dom';
 import { BITBOX, TREST_URL } from 'bitbox-sdk';
 import { HDNode } from 'bitcoincashjs-lib';
+import { AddressDetailsResult } from 'bitcoin-com-rest';
 
 import { routes } from './routes';
 
+import { LoadingProvider } from '@contexts/LoadingContext';
 import { BitboxProvider } from '@contexts/BitboxContext';
 import { WalletProvider, WalletData } from '@contexts/WalletContext';
-import { AddressDetailsResult } from 'bitcoin-com-rest';
+
 import { Spinner } from '@components/spinner/Spinner';
 
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
     const [bitbox] = useState(new BITBOX({ restURL: TREST_URL }));
+    const [isLoading, setIsLoading] = useState(false);
 
     const setWallet = async (mnemonic: string): Promise<void> => {
+        setIsLoading(true);
         const seed = bitbox.Mnemonic.toSeed(mnemonic);
         const masterNode = bitbox.HDNode.fromSeed(seed, 'testnet');
         const account = masterNode.derivePath('m/44\'/1\'/0\'/0/0') as HDNode;
 
         const addressDetails = await bitbox.Address.details(account.getAddress()) as AddressDetailsResult;
         setWalletData({ account, addressDetails });
+        setIsLoading(false);
     };
 
     // TODO Change this temporary measure
@@ -60,11 +65,14 @@ const App = (): JSX.Element => {
 
     return (
         <Suspense fallback={<Spinner />}>
+            {isLoading && <Spinner />}
             <BitboxProvider value={{ bitbox }} >
                 <WalletProvider value={{ wallet: walletData, setWallet }}>
-                    <Switch>
-                        {renderRoutes()}
-                    </Switch>
+                    <LoadingProvider value={{ setIsLoading }}>
+                        <Switch>
+                            {renderRoutes()}
+                        </Switch>
+                    </LoadingProvider>
                 </WalletProvider>
             </BitboxProvider>
         </Suspense >
