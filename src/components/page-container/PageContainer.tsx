@@ -10,8 +10,10 @@ export const PageContainer = (props: PropsWithChildren<{}>): JSX.Element | null 
         return (
             <>
                 <Header />
-                <div className="container-fluid">
-                    {props.children}
+                <div className="container-wrapper bg-light">
+                    <div className="container">
+                        {props.children}
+                    </div>
                 </div>
             </>
         );

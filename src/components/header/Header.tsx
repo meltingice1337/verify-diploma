@@ -8,7 +8,7 @@ export const Header = (): JSX.Element => {
     const { wallet } = useContext(WalletContext);
 
     return (
-        <nav className="navbar navbar-light bg-light">
+        <nav className="navbar navbar-light bg-white">
             <a className="navbar-brand">
                 <img src={logo} className="mr-2" width="30" height="30" alt="" />
                 Verify Diploma

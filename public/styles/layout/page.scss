@@ -7,10 +7,24 @@ main {
 	height: 100%;
 }
 
+main {
+	display: flex;
+	flex-flow: column;
+}
+
 .full-page-wrapper {
 	background-color: $athens-gray;
 	height: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.container-wrapper {
+	height: 100%;
+	padding: 1.5rem;
+
+	> .container {
+		height: 100%;
+	}
 }
