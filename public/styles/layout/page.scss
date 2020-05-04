@@ -1,4 +1,4 @@
-@import '../utils/variables.scss';
+@import "../utils/variables.scss";
 
 html,
 body,
@@ -26,5 +26,23 @@ main {
 
 	> .container {
 		height: 100%;
+		display: flex;
+		flex-flow: column;
+	}
+}
+
+.page-content {
+	height: 100%;
+	background-color: white;
+	border-radius: 0.3rem;
+	padding: 1.5rem 3rem;
+
+	display: flex;
+	flex-flow: column;
+
+	> form {
+		flex: 1;
+		display: flex;
+		flex-flow: column;
 	}
 }
