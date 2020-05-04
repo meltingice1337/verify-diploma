@@ -1,7 +1,8 @@
 import React, { PropsWithChildren, useContext } from 'react';
 
-import { Header } from '@components/header/Header';
 import WalletContext from '@contexts/WalletContext';
+
+import { Header } from '@components/header/Header';
 
 export const PageContainer = (props: PropsWithChildren<{}>): JSX.Element | null => {
     const { wallet } = useContext(WalletContext);

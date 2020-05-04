@@ -35,8 +35,6 @@ const CreateCertificate = (): JSX.Element => {
             const reader = new FileReader();
             reader.readAsDataURL(certImage[0]);
             reader.onload = (): void => setCertImageData(reader.result as string);
-
-
         }
     }, [certImage]);
 
