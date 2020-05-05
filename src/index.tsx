@@ -7,8 +7,11 @@ import { toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.min.css';
 import '../public/styles/main.scss';
+import { SetupFontAwesome } from '@utils/FontAwesomeSetup';
 
 toast.configure();
+
+SetupFontAwesome();
 
 ReactDOM.render(
     <BrowserRouter>

@@ -1,0 +1,73 @@
+@import "../../../public/styles/utils/variables.scss";
+
+.stepContainer {
+    background-color: white;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 0.1rem solid $geyser;
+    border-radius: 0.3rem;
+    display: flex;
+    justify-content: center;
+
+    .step {
+        margin-right: calc(6rem + 3.5rem);
+        color: $flamingo;
+        display: flex;
+        align-items: center;
+        position: relative;
+
+        &:after {
+            content: "";
+            position: absolute;
+            display: block;
+            border-bottom: 0.1rem dashed darken($geyser, 20%);
+
+            width: 3.5rem;
+            right: -3rem;
+            transform: translateX(100%);
+        }
+
+        &:last-child {
+            &:after {
+                content: none;
+            }
+        }
+
+        &.previous {
+            &:after {
+                border-color: $flamingo;
+            }
+
+            .stepCircle {
+                background-color: $flamingo;
+
+                .icon {
+                    font-size: 1.1rem;
+                    color: white;
+                }
+            }
+        }
+
+        &.future {
+            color: darken($geyser, 20%);
+
+            .stepCircle {
+                color: darken($geyser, 20%);
+                border-color: darken($geyser, 20%);
+            }
+        }
+
+        .stepCircle {
+            padding: 0.6rem;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            border: 0.1rem solid $flamingo;
+            display: block;
+            margin-right: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}

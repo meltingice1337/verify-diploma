@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 import { PageContainer } from '@components/page-container/PageContainer';
+import { Stepper } from '@components/stepper/Stepper';
 
 interface CertificateFormData {
     certificateTitle: string;
@@ -19,6 +20,7 @@ const CreateCertificate = (): JSX.Element => {
     const [certImageFileData, setCertImageFileData] = useState<string>();
 
     const onSubmit = handleSubmit((data): void => {
+        const urlRegex = /^http(s)?:\/\/(.*?)(\.|:[0-9]+)(\/.*)$/;
         console.log({ errors });
         console.log({ data });
     });
@@ -48,7 +50,8 @@ const CreateCertificate = (): JSX.Element => {
 
     return (
         <PageContainer>
-            <h2 className="mb-3">Create a new certificate</h2>
+            <h3 className="mb-3">Create a new certificate</h3>
+            <Stepper steps={['Certificate information', 'Second step', 'third step']} activeStep={0} />
             <div className="page-content">
                 <form onSubmit={onSubmit}>
                     <h4 className="mb-4">Certificate details</h4>
@@ -77,10 +80,11 @@ const CreateCertificate = (): JSX.Element => {
                                 <input type="file" name="certificateImageUpload" className="custom-file-input" id="certificateImageFile" aria-describedby="certificateImageFileHelp" onChange={onImageFileUploadChange} />
                                 <label className="custom-file-label" htmlFor="certificateImageInput">{certImageFile ? certImageFile.name : 'Load a certificate image'}</label>
                             </div>
-                            <small id="emailHelp" className="form-text text-muted">The image will be base64 encoded in the certificate</small>
+                            <small id="certificateImageFileHelp" className="form-text text-muted">The image will be base64 encoded in the certificate</small>
                             {certImageFileData && <img src={certImageFileData} className="mb-4" style={{ height: 'auto', width: 'auto', maxWidth: '30rem', maxHeight: '30rem', }} />}
                             <p className="mt-3 mb-3">or</p>
-                            <input name="certificateImageUrl" value={certImageUrl} onChange={onImageUrlChange} type="text" className="form-control" id="recipientName" placeholder="Enter image url ..." />
+                            <input name="certificateImageUrl" value={certImageUrl} onChange={onImageUrlChange} type="text" className="form-control" aria-describedby="certificateImageUrlHelp" id=" recipientName" placeholder="http(s)://domain.com/image.png" />
+                            <small id="certificateImageUrlHelp" className="form-text text-muted">The url must start with http(s)://</small>
                         </div>
                     </div>
                     <h4 className="mb-4">Certificate recipient</h4>
@@ -103,9 +107,9 @@ const CreateCertificate = (): JSX.Element => {
                             <small id="recipientGovIdHelp" className="form-text text-muted">This information can range from the social security number to ID`s serial</small>
                         </div>
                     </div>
-                    <button type="submit" className="btn btn-primary btn-lg mt-auto ml-auto">Continue</button>
                 </form>
             </div>
+            <button type="submit" className="btn btn-primary btn-lg mt-3 ml-auto">Continue</button>
         </PageContainer>
     );
 };
