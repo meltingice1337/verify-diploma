@@ -1,36 +1,18 @@
-export interface CertificateDetails {
-    title: string;
-    subtitle?: string;
-    description?: string;
-    imageUrl?: string;
-}
+import { SignableCertificateDetails, SignableCertificateRecipient, SignableCertificateIssuer } from './SignableCertificate.model';
 
-export interface CertificateRecipientVerification {
+export interface CertificateEntityVerification {
     publicKey: string;
     signature: string;
 }
 
-export interface CertificateRecipient {
-    email: string;
-    name: string;
-    govId: string;
-    verification?: CertificateRecipientVerification;
-}
-
-export interface CertificateIssuer {
-    name: string;
-    address: string;
-    email: string;
-    govRegistration: string;
-    url?: string;
-    imageUrl?: string;
-    verification?: CertificateRecipientVerification;
+export interface CertificateIssuer extends SignableCertificateIssuer {
+    verification?: CertificateEntityVerification;
 }
 
 export interface Certificate {
     id: string;
     nonce: string;
-    details: CertificateDetails;
-    recipient: string;
+    details: SignableCertificateDetails;
+    recipient: SignableCertificateRecipient;
     issuer: CertificateIssuer;
 }
