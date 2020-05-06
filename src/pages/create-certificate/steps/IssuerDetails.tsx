@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { UrlRegex } from '@utils/Validation';
 
 import { FormWithErrors } from '../CreateCertificate';
+import { imageFileToBase64 } from '@utils/Image';
 
 export interface IssuerDetailsFormData {
     name: string;
@@ -34,23 +35,9 @@ export const IssuerDetails = (props: IssuerDetailsProps): JSX.Element => {
         onValidateChange(props.form.value);
     }, []);
 
-    const onImageFileUploadChange = (event: ChangeEvent<HTMLInputElement>): boolean => {
-        if (event.target.files && event.target.files?.length > 0) {
-            const imageFile = event.target.files[0];
-            if (!(/\.(gif|jpe?g|tiff|png|webp|bmp)$/i).test(imageFile.name)) {
-                toast.error('The selected file is not an image.');
-                return false;
-            }
+    const onChange = async (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<void> => {
+        event.persist();
 
-            const reader = new FileReader();
-            reader.readAsDataURL(imageFile);
-            reader.onload = (): void => setIssuerImageFileData(reader.result as string);
-            return true;
-        }
-        return false;
-    };
-
-    const onChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         let formClone = { ...props.form.value };
         const key = event.target.name as keyof IssuerDetailsFormData;
         if (key !== 'imageFile') {
@@ -60,11 +47,13 @@ export const IssuerDetails = (props: IssuerDetailsProps): JSX.Element => {
                 setIssuerImageFileData(undefined);
             }
         } else {
-            const success = onImageFileUploadChange(event as ChangeEvent<HTMLInputElement>);
-            if (!success) {
+            const file = await imageFileToBase64((event.target as HTMLInputElement)?.files?.[0]);
+            setIssuerImageFileData(file);
+            if (!file) {
+                setIssuerImageFileData(undefined);
                 return;
             }
-            formClone = { ...props.form.value, imageFile: (event.target as HTMLInputElement).files?.[0], imageUrl: '' };
+            formClone = { ...props.form.value, imageFile: (event.target as HTMLInputElement)?.files?.[0], imageUrl: '' };
         }
 
         onValidateChange(formClone);

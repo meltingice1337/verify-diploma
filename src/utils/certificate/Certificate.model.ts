@@ -1,12 +1,11 @@
 export interface CertificateDetails {
-    id?: string;
-    name: string;
+    title: string;
     subtitle?: string;
     description?: string;
-    image?: string;
+    imageUrl?: string;
 }
 
-export interface CertificatePartyVerification {
+export interface CertificateRecipientVerification {
     publicKey: string;
     signature: string;
 }
@@ -14,19 +13,23 @@ export interface CertificatePartyVerification {
 export interface CertificateRecipient {
     email: string;
     name: string;
-    verification?: CertificatePartyVerification;
+    govId: string;
+    verification?: CertificateRecipientVerification;
 }
 
 export interface CertificateIssuer {
     name: string;
     address: string;
-    url?: string;
     email: string;
     govRegistration: string;
-    verification?: CertificatePartyVerification;
+    url?: string;
+    imageUrl?: string;
+    verification?: CertificateRecipientVerification;
 }
 
 export interface Certificate {
+    id: string;
+    nonce: string;
     details: CertificateDetails;
     recipient: string;
     issuer: CertificateIssuer;

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { UrlRegex } from '@utils/Validation';
 
 import { FormWithErrors } from '../CreateCertificate';
+import { imageFileToBase64 } from '@utils/Image';
 
 export interface CertificateDetailsFormData {
     certificateTitle: string;
@@ -34,23 +35,9 @@ export const CertificateDetails = (props: CertificateDetailsProps): JSX.Element 
         onValidateChange(props.form.value);
     }, []);
 
-    const onImageFileUploadChange = (event: ChangeEvent<HTMLInputElement>): boolean => {
-        if (event.target.files && event.target.files?.length > 0) {
-            const imageFile = event.target.files[0];
-            if (!(/\.(gif|jpe?g|tiff|png|webp|bmp)$/i).test(imageFile.name)) {
-                toast.error('The selected file is not an image.');
-                return false;
-            }
+    const onChange = async (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): Promise<void> => {
+        event.persist();
 
-            const reader = new FileReader();
-            reader.readAsDataURL(imageFile);
-            reader.onload = (): void => setCertImageFileData(reader.result as string);
-            return true;
-        }
-        return false;
-    };
-
-    const onChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         let formClone = { ...props.form.value };
         const key = event.target.name as keyof CertificateDetailsFormData;
         if (key !== 'certificateImageFile') {
@@ -60,11 +47,13 @@ export const CertificateDetails = (props: CertificateDetailsProps): JSX.Element 
                 setCertImageFileData(undefined);
             }
         } else {
-            const success = onImageFileUploadChange(event as ChangeEvent<HTMLInputElement>);
-            if (!success) {
+            const file = await imageFileToBase64((event.target as HTMLInputElement)?.files?.[0]);
+            setCertImageFileData(file);
+            if (!file) {
+                setCertImageFileData(undefined);
                 return;
             }
-            formClone = { ...props.form.value, certificateImageFile: (event.target as HTMLInputElement).files?.[0], certificateImageUrl: '' };
+            formClone = { ...props.form.value, certificateImageFile: (event.target as HTMLInputElement)?.files?.[0], certificateImageUrl: '' };
         }
 
         onValidateChange(formClone);
@@ -124,7 +113,7 @@ export const CertificateDetails = (props: CertificateDetailsProps): JSX.Element 
             <div className="form-group row">
                 <label htmlFor="recipientGovId" className="col-sm-2 col-form-label">Government ID</label>
                 <div className="col-sm-10">
-                    <input required name="recipientGovId" type="text" className="form-control" id="recipientGovId" aria-describedby="recipientGovIdHelp" placeholder="Enter the recipient's government identification ..." onChange={onChange} />
+                    <input required name="recipientGovId" value={props.form.value.recipientGovId} type="text" className="form-control" id="recipientGovId" aria-describedby="recipientGovIdHelp" placeholder="Enter the recipient's government identification ..." onChange={onChange} />
                     <div className="invalid-feedback">This field is required</div>
                     <small id="recipientGovIdHelp" className="form-text text-muted">This information can range from the social security number to ID`s serial</small>
                 </div>
