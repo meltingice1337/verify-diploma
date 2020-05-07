@@ -6,12 +6,11 @@ export interface CertificateEntityVerification {
 }
 
 export interface CertificateIssuer extends SignableCertificateIssuer {
-    verification?: CertificateEntityVerification;
+    verification: CertificateEntityVerification;
 }
 
 export interface Certificate {
     id: string;
-    nonce: string;
     details: SignableCertificateDetails;
     recipient: SignableCertificateRecipient;
     issuer: CertificateIssuer;

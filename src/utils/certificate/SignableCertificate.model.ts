@@ -25,7 +25,6 @@ export interface SignableCertificateIssuer {
 
 export interface SignableCertificate {
     id: string;
-    nonce: string;
     details: SignableCertificateDetails;
     recipient: SignableCertificateRecipient;
     issuer: SignableCertificateIssuer;

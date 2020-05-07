@@ -1,6 +1,4 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
-import { validate } from 'validate.js';
-import { toast } from 'react-toastify';
 
 import { UrlRegex } from '@utils/Validation';
 

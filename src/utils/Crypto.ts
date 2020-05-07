@@ -27,3 +27,5 @@ const decrypt = (encrypted: string, passphrase: string): string | null => {
 };
 
 export const AES = { encrypt, decrypt };
+
+export const bufferToHex = (buffer: Buffer): string => buffer.reduce((acc, v) => acc + `${v < 16 ? '0' : ''}${v.toString(16)}`, '');

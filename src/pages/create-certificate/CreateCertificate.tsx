@@ -1,11 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+
+import WalletContext from '@contexts/WalletContext';
 
 import { PageContainer } from '@components/page-container/PageContainer';
 import { Stepper } from '@components/stepper/Stepper';
+
 import { CertificateDetails, CertificateDetailsFormData } from './steps/CertificateDetails';
 import { IssuerDetails, IssuerDetailsFormData } from './steps/IssuerDetails';
 import { CertificateBroadcast, CertificateBroadcastData } from './steps/CertificateBroadcast';
+
 import { imageFileToBase64 } from '@utils/Image';
+import { Certificate } from '@utils/certificate/Certificate.model';
+import { generateSignCertificate } from '@utils/certificate/Certificate';
 
 export interface FormWithErrors<T> {
     value: T;
@@ -36,10 +42,13 @@ const CreateCertificate = (): JSX.Element => {
             certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
             recipientEmail: 'dariuscostolas@yahoo.com',
             recipientName: 'Darius Costolas',
-            recipientGovId: 'govid'
+            recipientGovId: 'ya it`s me from the gov'
         }
     });
     const [transactionData, setTransactionData] = useState<CertificateBroadcastData>();
+    const [signedCertificate, setSignedCertificate] = useState<Certificate>();
+
+    const { wallet } = useContext(WalletContext);
 
     useEffect(() => {
         const transformTxData = async (): Promise<CertificateBroadcastData> => ({
@@ -70,6 +79,13 @@ const CreateCertificate = (): JSX.Element => {
         })();
     }, [issuerForm, detailsForm]);
 
+    useEffect(() => {
+        if (activeStep === 2 && transactionData && wallet) {
+            const signCertificate = generateSignCertificate(transactionData, wallet);
+            setSignedCertificate(signCertificate);
+        }
+    }, [transactionData, activeStep, wallet]);
+
     const renderStep = (): JSX.Element | null => {
         if (activeStep === 0) {
             return <IssuerDetails form={issuerForm} onFormChange={(form): void => setIssuerForm(form)} />;
@@ -84,23 +100,40 @@ const CreateCertificate = (): JSX.Element => {
     const onContinue = (): void => {
         if (activeStep === 0) {
             setIssuerForm({ ...issuerForm, checked: true });
+
             if (issuerForm.valid) {
                 setActiveStep(1);
             }
         } else if (activeStep === 1) {
             setDetailsForm({ ...detailsForm, checked: true });
-            // setActiveStep
+
+            if (detailsForm.valid) {
+                setActiveStep(2);
+            }
+        }
+    };
+
+    const renderButtons = (): JSX.Element => {
+        if (activeStep === 2) {
+            return (
+                <div className="d-flex">
+                    <button type="submit" className="btn btn-primary btn-lg mt-3 mr-auto" onClick={onContinue}>Send to recipient for signing</button>
+                    <button type="submit" className="btn btn-success btn-lg mt-3 ml-auto" onClick={onContinue}>Publish</button>
+                </div>
+            );
+        } else {
+            return <button type="submit" className="btn btn-primary btn-lg mt-3 ml-auto" onClick={onContinue}>Continue</button>;
         }
     };
 
     return (
         <PageContainer>
             <h3 className="mb-3">Create a new certificate</h3>
-            <Stepper steps={['Issuer Details', 'Certificate Details', 'Certificate Broadcast']} activeStep={activeStep} />
+            <Stepper steps={['Issuer Details', 'Certificate Details', 'Certificate Preview', 'Published']} activeStep={activeStep} />
             <div className="page-content">
                 {renderStep()}
             </div>
-            <button type="submit" className="btn btn-primary btn-lg mt-3 ml-auto" onClick={onContinue}>Continue</button>
+            {renderButtons()}
         </PageContainer>
     );
 };
