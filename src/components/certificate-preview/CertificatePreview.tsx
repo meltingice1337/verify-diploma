@@ -2,26 +2,26 @@ import React from 'react';
 
 import { SignableCertificateIssuer, SignableCertificateRecipient, SignableCertificateDetails } from '@utils/certificate/SignableCertificate.model';
 
-export interface CertificateBroadcastData {
+export interface CertificatePreviewData {
     recipient: SignableCertificateRecipient;
     details: SignableCertificateDetails;
     issuer: SignableCertificateIssuer;
 }
 
-interface CertificateBroadcastProps {
-    data: CertificateBroadcastData;
+interface CertificatePreviewProps {
+    data: CertificatePreviewData;
 }
 
 type GroupInfoObject<T> = { [key in keyof Exclude<T, object>]: string };
 
-export const CertificateBroadcast = (props: CertificateBroadcastProps): JSX.Element => {
+export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element => {
     const renderFieldInfo = ((i: number, key: string, value?: string): JSX.Element => (
         <div className="row mb-2" key={`${key}-${value}-${i}`}>
             <div className="col-sm-5">
                 <p className="font-weight-bold text-capitalize">{key}</p>
             </div>
             <div className="col-sm-7">
-                {value}
+                {value?.toString()}
             </div>
         </div>
     ));
@@ -40,7 +40,7 @@ export const CertificateBroadcast = (props: CertificateBroadcastProps): JSX.Elem
         <div className="row">
             {renderGroupInfo<SignableCertificateIssuer>('col-sm-6', 'Certificate issuer', props.data.issuer, { govRegistration: 'Government Registration' }, ['name', 'govRegistration', 'email', 'url', 'address'], 'imageUrl')}
             {renderGroupInfo<SignableCertificateRecipient>('col-sm-6', 'Certificate recipient', props.data.recipient, { govId: 'Government ID' }, ['name', 'govId', 'email'])}
-            {renderGroupInfo<SignableCertificateDetails>('col-sm-6', 'Certificate details', props.data.details, {}, ['title', 'subtitle', 'description'], 'imageUrl')}
+            {renderGroupInfo<SignableCertificateDetails>('col-sm-6', 'Certificate details', props.data.details, { issuedOn: 'Issued On' }, ['title', 'issuedOn', 'subtitle', 'description'], 'imageUrl')}
         </div>
     );
 };

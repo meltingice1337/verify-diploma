@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
-import { SignableCertificate } from './SignableCertificate.model';
-import { Certificate } from './Certificate.model';
-import { BITBOX } from 'bitbox-sdk';
 import { WalletData } from '@contexts/WalletContext';
+
+import { SignableCertificate } from './SignableCertificate.model';
+import { Certificate, CertificateForRecipient } from './Certificate.model';
 import { bufferToHex } from '@utils/Crypto';
 
 export const generateCertUUID = (cert: Partial<SignableCertificate>): string => {
@@ -39,6 +39,18 @@ export const generateSignCertificate = (signableCertificate: Omit<SignableCertif
     const signature = signCertificate({ ...signableCertificate, id }, wallet);
     const publicKey = bufferToHex(wallet.account.getPublicKeyBuffer());
     return { ...signableCertificate, id, issuer: { ...signableCertificate.issuer, verification: { publicKey, signature } } };
+};
+
+export const downloadCertificate = (cert: SignableCertificate | Certificate | CertificateForRecipient, name = `${cert.id}-${cert.recipient.name}`): void => {
+    const data = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(cert))}`;
+    const normalizedName = name.replace(/\s+/, '_').toLowerCase();
+    const anchorNode = document.createElement('a');
+    anchorNode.setAttribute('href', data);
+    anchorNode.setAttribute('download', `${normalizedName}.json`);
+    anchorNode.style.display = 'none';
+    document.body.appendChild(anchorNode);
+    anchorNode.click();
+    anchorNode.remove();
 };
 
 // export const verifySignature = (cert: Certificate): boolean => {

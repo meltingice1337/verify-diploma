@@ -7,11 +7,12 @@ import { Stepper } from '@components/stepper/Stepper';
 
 import { CertificateDetails, CertificateDetailsFormData } from './steps/CertificateDetails';
 import { IssuerDetails, IssuerDetailsFormData } from './steps/IssuerDetails';
-import { CertificateBroadcast, CertificateBroadcastData } from './steps/CertificateBroadcast';
+import { CertificatePreviewData, CertificatePreview } from '@components/certificate-preview/CertificatePreview';
+
+import { Certificate, CertificateForRecipient } from '@utils/certificate/Certificate.model';
 
 import { imageFileToBase64 } from '@utils/Image';
-import { Certificate } from '@utils/certificate/Certificate.model';
-import { generateSignCertificate } from '@utils/certificate/Certificate';
+import { generateSignCertificate, downloadCertificate } from '@utils/certificate/Certificate';
 
 export interface FormWithErrors<T> {
     value: T;
@@ -42,16 +43,16 @@ const CreateCertificate = (): JSX.Element => {
             certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
             recipientEmail: 'dariuscostolas@yahoo.com',
             recipientName: 'Darius Costolas',
-            recipientGovId: 'ya it`s me from the gov'
+            recipientGovId: 'ya it`s me from the gov',
         }
     });
-    const [transactionData, setTransactionData] = useState<CertificateBroadcastData>();
+    const [transactionData, setTransactionData] = useState<CertificatePreviewData>();
     const [signedCertificate, setSignedCertificate] = useState<Certificate>();
 
     const { wallet } = useContext(WalletContext);
 
     useEffect(() => {
-        const transformTxData = async (): Promise<CertificateBroadcastData> => ({
+        const transformTxData = async (): Promise<CertificatePreviewData> => ({
             recipient: {
                 name: detailsForm.value.recipientName,
                 email: detailsForm.value.recipientEmail,
@@ -61,6 +62,7 @@ const CreateCertificate = (): JSX.Element => {
                 title: detailsForm.value.certificateTitle,
                 subtitle: detailsForm.value.certificateSubtitle,
                 description: detailsForm.value.certificateDescription,
+                issuedOn: new Date(),
                 imageUrl: detailsForm.value.certificateImageUrl || await imageFileToBase64(detailsForm.value.certificateImageFile)
             },
             issuer: {
@@ -92,12 +94,12 @@ const CreateCertificate = (): JSX.Element => {
         } else if (activeStep === 1) {
             return <CertificateDetails form={detailsForm} onFormChange={(detailsForm): void => setDetailsForm(detailsForm)} />;
         } else if (activeStep === 2) {
-            return <CertificateBroadcast data={transactionData!} />;
+            return <CertificatePreview data={transactionData!} />;
         }
         return null;
     };
 
-    const onContinue = (): void => {
+    const onContinueClick = (): void => {
         if (activeStep === 0) {
             setIssuerForm({ ...issuerForm, checked: true });
 
@@ -113,16 +115,21 @@ const CreateCertificate = (): JSX.Element => {
         }
     };
 
+    const onSendToRecipientClick = (): void => {
+        const draft: CertificateForRecipient = { ...signedCertificate!, draft: true };
+        downloadCertificate(draft, `${draft.id}-${draft.recipient.email}-${draft.recipient.name}-draft`);
+    };
+
     const renderButtons = (): JSX.Element => {
         if (activeStep === 2) {
             return (
                 <div className="d-flex">
-                    <button type="submit" className="btn btn-primary btn-lg mt-3 mr-auto" onClick={onContinue}>Send to recipient for signing</button>
-                    <button type="submit" className="btn btn-success btn-lg mt-3 ml-auto" onClick={onContinue}>Publish</button>
+                    <button type="submit" className="btn btn-primary btn-lg mt-3 mr-auto" onClick={onSendToRecipientClick}>Send to recipient for signing</button>
+                    <button type="submit" className="btn btn-success btn-lg mt-3 ml-auto" onClick={onContinueClick}>Publish</button>
                 </div>
             );
         } else {
-            return <button type="submit" className="btn btn-primary btn-lg mt-3 ml-auto" onClick={onContinue}>Continue</button>;
+            return <button type="submit" className="btn btn-primary btn-lg mt-3 ml-auto" onClick={onContinueClick}>Continue</button>;
         }
     };
 
