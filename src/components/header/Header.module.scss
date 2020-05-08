@@ -2,11 +2,45 @@
 
 .dashboardContextContainer {
     > a {
+        position: relative;
         color: darken($geyser, 30%);
+        font-size: 1.6rem;
+        margin-right: 1.6rem;
+        transition: all 0.25s ease-in-out;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+            color: transparentize($azure-radiance, 0.5);
+            text-decoration: none;
+
+            &:before {
+                background-color: transparentize($azure-radiance, 0.5);
+            }
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+
+        .icon {
+            margin-right: 0.8rem;
+            font-size: 2rem;
+        }
 
         &.active {
             color: $azure-radiance;
-            text-decoration: underline;
+
+            &:before {
+                content: "";
+                height: 0.2rem;
+                width: 100%;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                background-color: $azure-radiance;
+                bottom: -1.6rem;
+            }
         }
     }
 }

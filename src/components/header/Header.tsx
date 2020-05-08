@@ -8,6 +8,7 @@ import DashboardContext, { DashboardContextType } from '@contexts/DashboardConte
 import logo from '../../../public/assets/logo.png';
 
 import styles from './Header.module.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const Header = (): JSX.Element => {
     const { wallet } = useContext(WalletContext);
@@ -30,8 +31,14 @@ export const Header = (): JSX.Element => {
                 Verify Diploma
             </a>
             <div className={`navbar-nav flex-row ml-4 ${styles.dashboardContextContainer}`}>
-                <a href="#" className={`${context === 'issuer' ? styles.active : ''}`} onClick={onContextChange.bind(null, 'issuer')}>Issuer</a>
-                <a href="#" className={`ml-3 ${context === 'recipient' ? styles.active : ''}`} onClick={onContextChange.bind(null, 'recipient')}> Recipient</a>
+                <a href="#" className={`${context === 'issuer' ? styles.active : ''}`} onClick={onContextChange.bind(null, 'issuer')}>
+                    <FontAwesomeIcon icon="building" className={styles.icon} />
+                    Issuer
+                </a>
+                <a href="#" className={`ml-3 ${context === 'recipient' ? styles.active : ''}`} onClick={onContextChange.bind(null, 'recipient')}>
+                    <FontAwesomeIcon icon="user" className={styles.icon} />
+                    Recipient
+                </a>
             </div>
             <div className="navbar-nav ml-auto mr-auto flex-row">
                 Your address:
