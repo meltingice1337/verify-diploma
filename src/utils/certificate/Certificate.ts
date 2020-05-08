@@ -1,10 +1,14 @@
 import crypto from 'crypto';
+import bcl, { ECSignature } from 'bitcoincashjs-lib';
+import { BITBOX } from 'bitbox-sdk';
 
 import { WalletData } from '@contexts/WalletContext';
 
 import { SignableCertificate } from './SignableCertificate.model';
 import { Certificate, CertificateForRecipient } from './Certificate.model';
-import { bufferToHex } from '@utils/Crypto';
+
+import { readFile } from '@utils/File';
+import { extractProperties } from '@utils/Objects';
 
 export const generateCertUUID = (cert: Partial<SignableCertificate>): string => {
     const randomArr = crypto.randomBytes(32);
@@ -15,7 +19,7 @@ export const generateCertUUID = (cert: Partial<SignableCertificate>): string => 
 };
 
 export const toNormalizedJSONCertObj = <T extends object>(obj: T): string => {
-    if (typeof obj === 'object' && !Array.isArray(obj)) {
+    if (typeof obj === 'object' && !Array.isArray(obj) && !(obj instanceof Date)) {
         return Object.keys(obj as object)
             .filter(k => (obj)[k as keyof T] !== undefined && obj[k as keyof T] !== null)
             .sort((key1, key2) => key1 > key2 ? 1 : -1)
@@ -30,14 +34,25 @@ export const toNormalizedJSONCertObj = <T extends object>(obj: T): string => {
 export const signCertificate = (signableCertificate: SignableCertificate, wallet: WalletData): string => {
     const normalizedCert = toNormalizedJSONCertObj(signableCertificate);
     const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
-    const signature = bufferToHex(wallet.account.sign(certHash).toCompact());
+    const signature = wallet.account.sign(certHash).toDER().toString('hex');
     return signature;
+};
+
+export const toSignableCertificate = (certificate: Certificate | CertificateForRecipient): SignableCertificate => {
+    const { recipient, details, issuer, id } = certificate;
+    const signableCertificate: SignableCertificate = {
+        id: id,
+        issuer: extractProperties(issuer, ['name', 'address', 'email', 'govRegistration', 'url', 'imageUrl']),
+        recipient: extractProperties(recipient, ['name', 'email', 'govId']),
+        details: { ...extractProperties(details, ['title', 'subtitle', 'description', 'imageUrl']), issuedOn: details.issuedOn },
+    };
+    return signableCertificate;
 };
 
 export const generateSignCertificate = (signableCertificate: Omit<SignableCertificate, 'id'>, wallet: WalletData): Certificate => {
     const id = generateCertUUID(signableCertificate);
     const signature = signCertificate({ ...signableCertificate, id }, wallet);
-    const publicKey = bufferToHex(wallet.account.getPublicKeyBuffer());
+    const publicKey = wallet.account.getPublicKeyBuffer().toString('hex');
     return { ...signableCertificate, id, issuer: { ...signableCertificate.issuer, verification: { publicKey, signature } } };
 };
 
@@ -51,6 +66,29 @@ export const downloadCertificate = (cert: SignableCertificate | Certificate | Ce
     document.body.appendChild(anchorNode);
     anchorNode.click();
     anchorNode.remove();
+};
+
+export const verifyCertificate = (signature: string, publicKey: string, cert: SignableCertificate | Certificate, bitbox: BITBOX): boolean => {
+    const publicKeyBuffer = Buffer.from(publicKey, 'hex');
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
+    const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
+    const normalizedCert = toNormalizedJSONCertObj(cert);
+    const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
+    try {
+        return curvePair.verify(certHash, parsedSignatureBuffer);
+    } catch {
+        return false;
+    }
+};
+
+export const readCertificate = async (file: File): Promise<Certificate | CertificateForRecipient | null> => {
+    const json = await readFile(file);
+    if (json) {
+        const obj = JSON.parse(json);
+        return obj;
+    }
+    return null;
 };
 
 // export const verifySignature = (cert: Certificate): boolean => {

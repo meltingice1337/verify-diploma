@@ -54,7 +54,6 @@
     },
     "include": [
         "src/**/*",
-        "./jest.config.js",
         "typings"
     ],
     "exclude": [

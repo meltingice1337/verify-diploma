@@ -6,7 +6,6 @@ const CreateWallet = lazy((): Promise<{ default: FunctionComponent }> => import(
 const OpenWallet = lazy((): Promise<{ default: FunctionComponent }> => import('@pages/open-wallet/OpenWallet'));
 
 const Dashboard = lazy((): Promise<{ default: FunctionComponent }> => import('@pages/dashboard/Dashboard'));
-const CreateCertificate = lazy((): Promise<{ default: FunctionComponent }> => import('@pages/create-certificate/CreateCertificate'));
 
 export const routes: RouteProps[] = [
     {
@@ -25,10 +24,5 @@ export const routes: RouteProps[] = [
     {
         component: Dashboard,
         path: '/dashboard',
-        exact: true
-    },
-    {
-        component: CreateCertificate,
-        path: '/dashboard/create-certificate'
     },
 ];

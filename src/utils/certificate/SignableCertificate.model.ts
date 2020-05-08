@@ -1,5 +1,3 @@
-import { CertificateEntityVerification } from './Certificate.model';
-
 export interface SignableCertificateDetails {
     title: string;
     subtitle?: string;
@@ -12,7 +10,6 @@ export interface SignableCertificateRecipient {
     email: string;
     name: string;
     govId: string;
-    verification?: CertificateEntityVerification;
 }
 
 export interface SignableCertificateIssuer {

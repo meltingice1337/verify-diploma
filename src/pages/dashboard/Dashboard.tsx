@@ -2,17 +2,24 @@ import React, { useContext, useEffect } from 'react';
 
 import { PageContainer } from '@components/page-container/PageContainer';
 import DashboardContext from '@contexts/DashboardContext';
+import { DashboardRecipient } from './contexts/DashboardRecipient';
+import { DashboardIssuer } from './contexts/DashboardIssuer';
 
 const Dashboard = (): JSX.Element => {
     const { context } = useContext(DashboardContext);
 
-    useEffect(() => {
-        console.log('test');
-    }, [context]);
+    const renderDashboardCtx = (): JSX.Element | null => {
+        if (context === 'recipient') {
+            return <DashboardRecipient />;
+        } else if (context === 'issuer') {
+            return <DashboardIssuer />;
+        }
+        return null;
+    };
 
     return (
         <PageContainer>
-            Generate new certificate
+            {renderDashboardCtx()}
         </PageContainer>
 
     );

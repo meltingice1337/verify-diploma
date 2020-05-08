@@ -93,8 +93,8 @@ const CreateCertificate = (): JSX.Element => {
             return <IssuerDetails form={issuerForm} onFormChange={(form): void => setIssuerForm(form)} />;
         } else if (activeStep === 1) {
             return <CertificateDetails form={detailsForm} onFormChange={(detailsForm): void => setDetailsForm(detailsForm)} />;
-        } else if (activeStep === 2) {
-            return <CertificatePreview data={transactionData!} />;
+        } else if (activeStep === 2 && transactionData) {
+            return <CertificatePreview data={transactionData} />;
         }
         return null;
     };
@@ -134,14 +134,14 @@ const CreateCertificate = (): JSX.Element => {
     };
 
     return (
-        <PageContainer>
+        <>
             <h3 className="mb-3">Create a new certificate</h3>
             <Stepper steps={['Issuer Details', 'Certificate Details', 'Certificate Preview', 'Published']} activeStep={activeStep} />
             <div className="page-content">
                 {renderStep()}
             </div>
             {renderButtons()}
-        </PageContainer>
+        </>
     );
 };
 
