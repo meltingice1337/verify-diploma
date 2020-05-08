@@ -11,11 +11,16 @@ import { BitboxProvider } from '@contexts/BitboxContext';
 import { WalletProvider, WalletData } from '@contexts/WalletContext';
 
 import { Spinner } from '@components/spinner/Spinner';
+import { DashboardContextType, DashboardProvider } from '@contexts/DashboardContext';
+import useLocalStorage from '@rehooks/local-storage';
 
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
     const [bitbox] = useState(new BITBOX({ restURL: TREST_URL }));
     const [isLoading, setIsLoading] = useState(false);
+    const [dashboardCtx, setDashboardCtx] = useState<DashboardContextType>('issuer');
+
+    const [dashboardContextStorage] = useLocalStorage<DashboardContextType>('dashboard-ctx');
 
     const setWallet = async (mnemonic: string): Promise<void> => {
         setIsLoading(true);
@@ -32,6 +37,12 @@ const App = (): JSX.Element => {
     useEffect(() => {
         setWallet('hint lens spread combine guide heart taxi curious oxygen lock advice aerobic');
     }, []);
+
+    useEffect(() => {
+        if (dashboardContextStorage) {
+            setDashboardCtx(dashboardContextStorage);
+        }
+    }, [dashboardContextStorage]);
 
     const renderRouteWithProps = (
         Component: React.ComponentClass,
@@ -69,9 +80,11 @@ const App = (): JSX.Element => {
             <BitboxProvider value={{ bitbox }} >
                 <WalletProvider value={{ wallet: walletData, setWallet }}>
                     <LoadingProvider value={{ setIsLoading }}>
-                        <Switch>
-                            {renderRoutes()}
-                        </Switch>
+                        <DashboardProvider value={{ context: dashboardCtx, setContext: setDashboardCtx }}>
+                            <Switch>
+                                {renderRoutes()}
+                            </Switch>
+                        </DashboardProvider>
                     </LoadingProvider>
                 </WalletProvider>
             </BitboxProvider>

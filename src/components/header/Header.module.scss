@@ -1,0 +1,12 @@
+@import "../../../public/styles/utils/variables.scss";
+
+.dashboardContextContainer {
+    > a {
+        color: darken($geyser, 30%);
+
+        &.active {
+            color: $azure-radiance;
+            text-decoration: underline;
+        }
+    }
+}
