@@ -2,8 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 
 import WalletContext from '@contexts/WalletContext';
 
-import { PageContainer } from '@components/page-container/PageContainer';
 import { Stepper } from '@components/stepper/Stepper';
+
+import { useRouter } from '@hooks/RouterHook';
 
 import { CertificateDetails, CertificateDetailsFormData } from './steps/CertificateDetails';
 import { IssuerDetails, IssuerDetailsFormData } from './steps/IssuerDetails';
@@ -20,34 +21,62 @@ export interface FormWithErrors<T> {
     valid?: boolean;
 }
 
-const CreateCertificate = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(2);
+interface CreateCertificateLocationState {
+    certificate: Certificate;
+}
 
+const CreateCertificate = (): JSX.Element => {
+    const [activeStep, setActiveStep] = useState(0);
+    // const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
+    //     value: {
+    //         name: 'Politehnica',
+    //         address: 'Maslinului nr 1',
+    //         email: 'poli@poli.ro',
+    //         govRegistration: 'ROG9123KS',
+    //         url: 'www.upt.ro',
+    //         imageFile: undefined,
+    //         imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
+    //     }
+    // });
+    // const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
+    //     value: {
+    //         certificateTitle: 'JS Engineer',
+    //         certificateSubtitle: 'Best engineer in the west',
+    //         certificateDescription: 'This is given because of finishing the iures training program',
+    //         certificateImageFile: undefined,
+    //         certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
+    //         recipientEmail: 'dariuscostolas@yahoo.com',
+    //         recipientName: 'Darius Costolas',
+    //         recipientGovId: 'ya it`s me from the gov',
+    //     }
+    // });
     const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
         value: {
-            name: 'Politehnica',
-            address: 'Maslinului nr 1',
-            email: 'poli@poli.ro',
-            govRegistration: 'ROG9123KS',
-            url: 'www.upt.ro',
+            name: '',
+            address: '',
+            email: '',
+            govRegistration: '',
+            url: '',
             imageFile: undefined,
-            imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
+            imageUrl: ''
         }
     });
     const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
         value: {
-            certificateTitle: 'JS Engineer',
-            certificateSubtitle: 'Best engineer in the west',
-            certificateDescription: 'This is given because of finishing the iures training program',
+            certificateTitle: '',
+            certificateSubtitle: '',
+            certificateDescription: '',
             certificateImageFile: undefined,
-            certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
-            recipientEmail: 'dariuscostolas@yahoo.com',
-            recipientName: 'Darius Costolas',
-            recipientGovId: 'ya it`s me from the gov',
+            certificateImageUrl: '',
+            recipientEmail: '',
+            recipientName: '',
+            recipientGovId: '',
         }
     });
     const [transactionData, setTransactionData] = useState<CertificatePreviewData>();
     const [signedCertificate, setSignedCertificate] = useState<Certificate>();
+
+    const router = useRouter<unknown, CreateCertificateLocationState>();
 
     const { wallet } = useContext(WalletContext);
 
@@ -56,7 +85,8 @@ const CreateCertificate = (): JSX.Element => {
             recipient: {
                 name: detailsForm.value.recipientName,
                 email: detailsForm.value.recipientEmail,
-                govId: detailsForm.value.recipientGovId
+                govId: detailsForm.value.recipientGovId,
+                verification: signedCertificate?.recipient.verification
             },
             details: {
                 title: detailsForm.value.certificateTitle,
@@ -71,7 +101,8 @@ const CreateCertificate = (): JSX.Element => {
                 govRegistration: issuerForm.value.govRegistration,
                 email: issuerForm.value.email,
                 url: issuerForm.value.url,
-                imageUrl: issuerForm.value.imageUrl || await imageFileToBase64(issuerForm.value.imageFile)
+                imageUrl: issuerForm.value.imageUrl || await imageFileToBase64(issuerForm.value.imageFile),
+                verification: signedCertificate?.issuer.verification
             }
         });
 
@@ -82,7 +113,42 @@ const CreateCertificate = (): JSX.Element => {
     }, [issuerForm, detailsForm]);
 
     useEffect(() => {
-        if (activeStep === 2 && transactionData && wallet) {
+        if (router.location.state?.certificate) {
+            const { issuer, recipient, details } = router.location.state.certificate;
+            setActiveStep(2);
+            setIssuerForm({
+                value: {
+                    name: issuer.name,
+                    address: issuer.address,
+                    email: issuer.email,
+                    govRegistration: issuer.govRegistration,
+                    url: issuer.url,
+                    imageFile: undefined,
+                    imageUrl: issuer.imageUrl
+
+                }
+            });
+
+            setDetailsForm({
+                value: {
+                    certificateTitle: details.title,
+                    certificateSubtitle: details.subtitle,
+                    certificateDescription: details.description,
+                    certificateImageFile: undefined,
+                    certificateImageUrl: details.imageUrl,
+                    recipientEmail: recipient.email,
+                    recipientName: recipient.name,
+                    recipientGovId: recipient.govId,
+                }
+            });
+
+            setSignedCertificate(router.location.state.certificate);
+            // router.replace(router.location.pathname, undefined);
+        }
+    }, [router.location]);
+
+    useEffect(() => {
+        if (activeStep === 2 && transactionData && wallet && !signedCertificate) {
             const signCertificate = generateSignCertificate(transactionData, wallet);
             setSignedCertificate(signCertificate);
         }

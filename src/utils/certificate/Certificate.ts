@@ -38,7 +38,7 @@ export const signCertificate = (signableCertificate: SignableCertificate, wallet
     return signature;
 };
 
-export const toSignableCertificate = (certificate: Certificate | CertificateForRecipient): SignableCertificate => {
+export const toSignableCertificate = (certificate: Certificate | CertificateForRecipient, includeRecipientSig = false): SignableCertificate => {
     const { recipient, details, issuer, id } = certificate;
     const signableCertificate: SignableCertificate = {
         id: id,
@@ -46,6 +46,11 @@ export const toSignableCertificate = (certificate: Certificate | CertificateForR
         recipient: extractProperties(recipient, ['name', 'email', 'govId']),
         details: { ...extractProperties(details, ['title', 'subtitle', 'description', 'imageUrl']), issuedOn: details.issuedOn },
     };
+
+    if (includeRecipientSig) {
+        signableCertificate.recipient.verification = certificate.recipient.verification;
+    }
+
     return signableCertificate;
 };
 
@@ -68,14 +73,18 @@ export const downloadCertificate = (cert: SignableCertificate | Certificate | Ce
     anchorNode.remove();
 };
 
-export const verifyCertificate = (signature: string, publicKey: string, cert: SignableCertificate | Certificate, bitbox: BITBOX): boolean => {
-    const publicKeyBuffer = Buffer.from(publicKey, 'hex');
-    const signatureBuffer = Buffer.from(signature, 'hex');
-    const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
-    const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
-    const normalizedCert = toNormalizedJSONCertObj(cert);
-    const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
+export const verifyCertificate = (signature: string | undefined, publicKey: string | undefined, cert: SignableCertificate | Certificate, bitbox: BITBOX): boolean => {
+    if (!signature || !publicKey) {
+        return false;
+    }
+
     try {
+        const publicKeyBuffer = Buffer.from(publicKey, 'hex');
+        const signatureBuffer = Buffer.from(signature, 'hex');
+        const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
+        const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
+        const normalizedCert = toNormalizedJSONCertObj(cert);
+        const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
     } catch {
         return false;

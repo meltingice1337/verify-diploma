@@ -1,26 +1,27 @@
 import React, { useState, useEffect, useRef, ChangeEvent, useContext } from 'react';
-import { Switch, Route, Link, useLocation } from 'react-router-dom';
-
-import CreateCertificate from '@pages/create-certificate/CreateCertificate';
+import { Switch, Route, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 import BitboxContext from '@contexts/BitboxContext';
 
-import { readCertificate, toSignableCertificate, verifyCertificate, signCertificate } from '@utils/certificate/Certificate';
-import WalletContext from '@contexts/WalletContext';
+import CreateCertificate from '@pages/create-certificate/CreateCertificate';
+
+import { useRouter } from '@hooks/RouterHook';
+
+import { readCertificate, toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 
 export const DashboardIssuer = (): JSX.Element => {
     const [defaultRoute, setDefaultRoute] = useState(true);
 
     const fileRef = useRef<HTMLInputElement>(null);
 
-    const { wallet } = useContext(WalletContext);
     const { bitbox } = useContext(BitboxContext);
 
-    const location = useLocation();
+    const router = useRouter();
 
     useEffect(() => {
         setDefaultRoute(location.pathname === '/dashboard');
-    }, [location]);
+    }, [router.location]);
 
     const onAddCertificate = (): void => {
         fileRef.current!.click();
@@ -30,11 +31,16 @@ export const DashboardIssuer = (): JSX.Element => {
         const file = event.target.files?.[0];
         if (file) {
             const certificate = await readCertificate(file);
-            console.log(certificate);
             if (certificate) {
                 const signableCertificate = toSignableCertificate(certificate);
-                const verify = verifyCertificate(certificate.issuer.verification.signature, certificate.issuer.verification.publicKey, signableCertificate, bitbox);
-                console.log('certificate sig', verify);
+                const verified = verifyCertificate(certificate.issuer.verification?.signature, certificate.issuer.verification?.publicKey, signableCertificate, bitbox);
+
+                if (!verified) {
+                    toast.error('The recipient has changed the certificate. Beware !');
+                    return;
+                }
+
+                router.push('/dashboard/create-certificate', { certificate });
             }
         }
     };

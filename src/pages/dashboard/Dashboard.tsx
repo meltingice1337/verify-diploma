@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 
 import { PageContainer } from '@components/page-container/PageContainer';
 import DashboardContext from '@contexts/DashboardContext';
