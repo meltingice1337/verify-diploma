@@ -9,6 +9,7 @@ import CreateCertificate from '@pages/create-certificate/CreateCertificate';
 import { useRouter } from '@hooks/RouterHook';
 
 import { readCertificate, toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
+import WalletContext from '@contexts/WalletContext';
 
 export const DashboardIssuer = (): JSX.Element => {
     const [defaultRoute, setDefaultRoute] = useState(true);
@@ -16,6 +17,7 @@ export const DashboardIssuer = (): JSX.Element => {
     const fileRef = useRef<HTMLInputElement>(null);
 
     const { bitbox } = useContext(BitboxContext);
+    const { wallet } = useContext(WalletContext);
 
     const router = useRouter();
 
@@ -33,7 +35,7 @@ export const DashboardIssuer = (): JSX.Element => {
             const certificate = await readCertificate(file);
             if (certificate) {
                 const signableCertificate = toSignableCertificate(certificate);
-                const verified = verifyCertificate(certificate.issuer.verification, signableCertificate, bitbox);
+                const verified = verifyCertificate({ publicKey: wallet!.account.getPublicKeyBuffer().toString('hex'), signature: certificate.issuer.verification!.signature }, signableCertificate, bitbox);
 
                 if (!verified) {
                     toast.error('The recipient has changed the certificate. Beware !');
