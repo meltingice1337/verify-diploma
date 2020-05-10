@@ -11,11 +11,12 @@ export interface CertificateIssuer extends SignableCertificateIssuer {
 
 export interface Certificate {
     id: string;
+    txid?: string;
     details: SignableCertificateDetails;
     recipient: SignableCertificateRecipient;
     issuer: CertificateIssuer;
 }
 
 export interface CertificateForRecipient extends Certificate {
-    draft: boolean;
+    draft?: boolean;
 }

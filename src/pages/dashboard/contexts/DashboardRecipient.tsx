@@ -1,5 +1,6 @@
 import React, { useRef, ChangeEvent, useState, useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import useLocalStorage from '@rehooks/local-storage';
 
 import { Modal } from '@components/modal/Modal';
 import { CertificatePreview } from '@components/certificate-preview/CertificatePreview';
@@ -11,8 +12,7 @@ import { Table, TableRow } from '@components/table/Table';
 
 import { CertificateForRecipient, Certificate } from '@utils/certificate/Certificate.model';
 
-import { readCertificate, signCertificate, toSignableCertificate, downloadCertificate, verifyCertificate } from '@utils/certificate/Certificate';
-import useLocalStorage from '@rehooks/local-storage';
+import { readCertificate, signCertificate, toSignableCertificate, downloadCertificate, verifyCertificate, hashCertificate } from '@utils/certificate/Certificate';
 
 export const DashboardRecipient = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);

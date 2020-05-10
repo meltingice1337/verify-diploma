@@ -38,9 +38,9 @@ export const signCertificate = (signableCertificate: SignableCertificate, wallet
     return signature;
 };
 
-export const toSignableCertificate = (certificate: Certificate | CertificateForRecipient, includeRecipientSig = false): SignableCertificate => {
+export const toSignableCertificate = (certificate: Certificate | CertificateForRecipient, includeRecipientSig = false, includeIssuerSig = false): SignableCertificate => {
     const { recipient, details, issuer, id } = certificate;
-    const signableCertificate: SignableCertificate = {
+    const signableCertificate: Certificate = {
         id: id,
         issuer: extractProperties(issuer, ['name', 'address', 'email', 'govRegistration', 'url', 'imageUrl']),
         recipient: extractProperties(recipient, ['name', 'email', 'govId']),
@@ -49,6 +49,10 @@ export const toSignableCertificate = (certificate: Certificate | CertificateForR
 
     if (includeRecipientSig) {
         signableCertificate.recipient.verification = certificate.recipient.verification;
+    }
+
+    if (includeIssuerSig) {
+        signableCertificate.issuer.verification = certificate.issuer.verification;
     }
 
     return signableCertificate;

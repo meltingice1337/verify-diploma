@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { toast } from 'react-toastify';
 
 import WalletContext from '@contexts/WalletContext';
 import BitboxContext from '@contexts/BitboxContext';
@@ -157,6 +158,33 @@ const CreateCertificate = (): JSX.Element => {
         }
     }, [transactionData, activeStep, wallet]);
 
+    const broadcastCertTx = async (): Promise<void> => {
+        let cert: CertificateForRecipient | Certificate = signedCertificate!;
+        if (cert?.recipient.verification) {
+            const recipientSignedSig = signCertificate(toSignableCertificate(cert, true), wallet!);
+            cert = {
+                ...cert,
+                issuer: {
+                    ...cert.issuer,
+                    verification: {
+                        publicKey: cert.issuer.verification!.publicKey,
+                        signature: recipientSignedSig
+                    }
+                },
+                draft: false
+            };
+        }
+        const result = encodeCertTx(bitbox, cert, 'create');
+        const tx = await createCertTx(result, wallet!, bitbox);
+        if (tx) {
+            const txid = await bitbox.RawTransactions.sendRawTransaction(tx);
+            cert.txid = txid;
+            downloadCertificate(cert);
+            toast.success(`The certificate was published, txid: ${txid}`);
+            router.push('/dashboard');
+        }
+    };
+
     const renderStep = (): JSX.Element | null => {
         if (activeStep === 0) {
             return <IssuerDetails form={issuerForm} onFormChange={(form): void => setIssuerForm(form)} />;
@@ -182,22 +210,7 @@ const CreateCertificate = (): JSX.Element => {
                 setActiveStep(2);
             }
         } else if (activeStep === 2) {
-            const recipientSignedSig = signCertificate(toSignableCertificate(signedCertificate!, true), wallet!);
-            console.log(toSignableCertificate(signedCertificate!, true), recipientSignedSig);
-            const recipientSigned: Certificate | CertificateForRecipient = {
-                ...signedCertificate!,
-                issuer: {
-                    ...signedCertificate!.issuer,
-                    verification: {
-                        publicKey: signedCertificate!.issuer.verification!.publicKey,
-                        signature: recipientSignedSig
-                    }
-                },
-                draft: false
-            };
-            downloadCertificate(recipientSigned);
-            const result = encodeCertTx(bitbox, recipientSigned, 'create');
-            const tx = createCertTx(result, wallet!, bitbox);
+            broadcastCertTx();
         }
     };
 
