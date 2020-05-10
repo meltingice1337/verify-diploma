@@ -5,7 +5,7 @@ import { BITBOX } from 'bitbox-sdk';
 import { WalletData } from '@contexts/WalletContext';
 
 import { SignableCertificate } from './SignableCertificate.model';
-import { Certificate, CertificateForRecipient } from './Certificate.model';
+import { Certificate, CertificateForRecipient, CertificateEntityVerification } from './Certificate.model';
 
 import { readFile } from '@utils/File';
 import { extractProperties } from '@utils/Objects';
@@ -54,6 +54,12 @@ export const toSignableCertificate = (certificate: Certificate | CertificateForR
     return signableCertificate;
 };
 
+export const hashCertificate = (certificate: Certificate): string => {
+    const normalizedCert = toNormalizedJSONCertObj(certificate);
+    const certHash = crypto.createHash('sha256').update(normalizedCert).digest('hex');
+    return certHash;
+};
+
 export const generateSignCertificate = (signableCertificate: Omit<SignableCertificate, 'id'>, wallet: WalletData): Certificate => {
     const id = generateCertUUID(signableCertificate);
     const signature = signCertificate({ ...signableCertificate, id }, wallet);
@@ -73,20 +79,21 @@ export const downloadCertificate = (cert: SignableCertificate | Certificate | Ce
     anchorNode.remove();
 };
 
-export const verifyCertificate = (signature: string | undefined, publicKey: string | undefined, cert: SignableCertificate | Certificate, bitbox: BITBOX): boolean => {
-    if (!signature || !publicKey) {
+export const verifyCertificate = (verification: CertificateEntityVerification | undefined, cert: SignableCertificate | Certificate, bitbox: BITBOX): boolean => {
+    if (!verification?.signature || !verification?.publicKey) {
         return false;
     }
 
     try {
-        const publicKeyBuffer = Buffer.from(publicKey, 'hex');
-        const signatureBuffer = Buffer.from(signature, 'hex');
+        const publicKeyBuffer = Buffer.from(verification.publicKey, 'hex');
+        const signatureBuffer = Buffer.from(verification.signature, 'hex');
         const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
         const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
         const normalizedCert = toNormalizedJSONCertObj(cert);
         const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
-    } catch {
+    } catch (e) {
+        console.error('error while verifying', e);
         return false;
     }
 };

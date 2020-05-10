@@ -5,7 +5,7 @@ export interface SignableCertificateDetails {
     subtitle?: string;
     description?: string;
     imageUrl?: string;
-    issuedOn?: Date;
+    issuedOn: Date;
 }
 
 export interface SignableCertificateRecipient {
