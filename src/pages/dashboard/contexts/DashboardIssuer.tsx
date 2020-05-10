@@ -33,7 +33,7 @@ export const DashboardIssuer = (): JSX.Element => {
             const certificate = await readCertificate(file);
             if (certificate) {
                 const signableCertificate = toSignableCertificate(certificate);
-                const verified = verifyCertificate(certificate.issuer.verification?.signature, certificate.issuer.verification?.publicKey, signableCertificate, bitbox);
+                const verified = verifyCertificate(certificate.issuer.verification, signableCertificate, bitbox);
 
                 if (!verified) {
                     toast.error('The recipient has changed the certificate. Beware !');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 
 import WalletContext from '@contexts/WalletContext';
+import BitboxContext from '@contexts/BitboxContext';
 
 import { Stepper } from '@components/stepper/Stepper';
 
@@ -13,7 +14,8 @@ import { CertificatePreviewData, CertificatePreview } from '@components/certific
 import { Certificate, CertificateForRecipient } from '@utils/certificate/Certificate.model';
 
 import { imageFileToBase64 } from '@utils/Image';
-import { generateSignCertificate, downloadCertificate } from '@utils/certificate/Certificate';
+import { generateSignCertificate, downloadCertificate, toSignableCertificate, signCertificate } from '@utils/certificate/Certificate';
+import { encodeCertTx, createCertTx } from '@utils/certificate/Transaction';
 
 export interface FormWithErrors<T> {
     value: T;
@@ -26,59 +28,60 @@ interface CreateCertificateLocationState {
 }
 
 const CreateCertificate = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(0);
-    // const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
-    //     value: {
-    //         name: 'Politehnica',
-    //         address: 'Maslinului nr 1',
-    //         email: 'poli@poli.ro',
-    //         govRegistration: 'ROG9123KS',
-    //         url: 'www.upt.ro',
-    //         imageFile: undefined,
-    //         imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
-    //     }
-    // });
-    // const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
-    //     value: {
-    //         certificateTitle: 'JS Engineer',
-    //         certificateSubtitle: 'Best engineer in the west',
-    //         certificateDescription: 'This is given because of finishing the iures training program',
-    //         certificateImageFile: undefined,
-    //         certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
-    //         recipientEmail: 'dariuscostolas@yahoo.com',
-    //         recipientName: 'Darius Costolas',
-    //         recipientGovId: 'ya it`s me from the gov',
-    //     }
-    // });
+    const [activeStep, setActiveStep] = useState(2);
     const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
         value: {
-            name: '',
-            address: '',
-            email: '',
-            govRegistration: '',
-            url: '',
+            name: 'Politehnica',
+            address: 'Maslinului nr 1',
+            email: 'poli@poli.ro',
+            govRegistration: 'ROG9123KS',
+            url: 'www.upt.ro',
             imageFile: undefined,
-            imageUrl: ''
+            imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
         }
     });
     const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
         value: {
-            certificateTitle: '',
-            certificateSubtitle: '',
-            certificateDescription: '',
+            certificateTitle: 'JS Engineer',
+            certificateSubtitle: 'Best engineer in the west',
+            certificateDescription: 'This is given because of finishing the iures training program',
             certificateImageFile: undefined,
-            certificateImageUrl: '',
-            recipientEmail: '',
-            recipientName: '',
-            recipientGovId: '',
+            certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
+            recipientEmail: 'dariuscostolas@yahoo.com',
+            recipientName: 'Darius Costolas',
+            recipientGovId: 'ya it`s me from the gov',
         }
     });
+    // const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
+    //     value: {
+    //         name: '',
+    //         address: '',
+    //         email: '',
+    //         govRegistration: '',
+    //         url: '',
+    //         imageFile: undefined,
+    //         imageUrl: ''
+    //     }
+    // });
+    // const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
+    //     value: {
+    //         certificateTitle: '',
+    //         certificateSubtitle: '',
+    //         certificateDescription: '',
+    //         certificateImageFile: undefined,
+    //         certificateImageUrl: '',
+    //         recipientEmail: '',
+    //         recipientName: '',
+    //         recipientGovId: '',
+    //     }
+    // });
     const [transactionData, setTransactionData] = useState<CertificatePreviewData>();
     const [signedCertificate, setSignedCertificate] = useState<Certificate>();
 
     const router = useRouter<unknown, CreateCertificateLocationState>();
 
     const { wallet } = useContext(WalletContext);
+    const { bitbox } = useContext(BitboxContext);
 
     useEffect(() => {
         const transformTxData = async (): Promise<CertificatePreviewData> => ({
@@ -143,7 +146,7 @@ const CreateCertificate = (): JSX.Element => {
             });
 
             setSignedCertificate(router.location.state.certificate);
-            // router.replace(router.location.pathname, undefined);
+            router.replace(router.location.pathname, undefined);
         }
     }, [router.location]);
 
@@ -178,6 +181,23 @@ const CreateCertificate = (): JSX.Element => {
             if (detailsForm.valid) {
                 setActiveStep(2);
             }
+        } else if (activeStep === 2) {
+            const recipientSignedSig = signCertificate(toSignableCertificate(signedCertificate!, true), wallet!);
+            console.log(toSignableCertificate(signedCertificate!, true), recipientSignedSig);
+            const recipientSigned: Certificate | CertificateForRecipient = {
+                ...signedCertificate!,
+                issuer: {
+                    ...signedCertificate!.issuer,
+                    verification: {
+                        publicKey: signedCertificate!.issuer.verification!.publicKey,
+                        signature: recipientSignedSig
+                    }
+                },
+                draft: false
+            };
+            downloadCertificate(recipientSigned);
+            const result = encodeCertTx(bitbox, recipientSigned, 'create');
+            const tx = createCertTx(result, wallet!, bitbox);
         }
     };
 

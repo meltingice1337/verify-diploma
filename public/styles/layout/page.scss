@@ -47,3 +47,12 @@ main {
 		flex-flow: column;
 	}
 }
+
+.table td,
+.table th {
+	padding: 1.15rem;
+}
+
+.clickable {
+	cursor: pointer;
+}
