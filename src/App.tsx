@@ -3,16 +3,16 @@ import { RouteComponentProps, Route, RouteProps, Switch } from 'react-router-dom
 import { BITBOX, TREST_URL } from 'bitbox-sdk';
 import { HDNode } from 'bitcoincashjs-lib';
 import { AddressDetailsResult } from 'bitcoin-com-rest';
+import useLocalStorage from '@rehooks/local-storage';
 
 import { routes } from './routes';
 
+import { WalletProvider, WalletData } from '@contexts/WalletContext';
+import { DashboardContextType, DashboardProvider } from '@contexts/DashboardContext';
 import { LoadingProvider } from '@contexts/LoadingContext';
 import { BitboxProvider } from '@contexts/BitboxContext';
-import { WalletProvider, WalletData } from '@contexts/WalletContext';
 
 import { Spinner } from '@components/spinner/Spinner';
-import { DashboardContextType, DashboardProvider } from '@contexts/DashboardContext';
-import useLocalStorage from '@rehooks/local-storage';
 
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
@@ -44,6 +44,7 @@ const App = (): JSX.Element => {
             setDashboardCtx(dashboardContextStorage);
         }
     }, [dashboardContextStorage]);
+
 
     const renderRouteWithProps = (
         Component: React.ComponentClass,

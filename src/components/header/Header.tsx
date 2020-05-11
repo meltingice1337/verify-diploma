@@ -1,6 +1,7 @@
 import React, { useContext, MouseEvent } from 'react';
 import useLocalStorage from '@rehooks/local-storage';
 import { useHistory } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import WalletContext from '@contexts/WalletContext';
 import DashboardContext, { DashboardContextType } from '@contexts/DashboardContext';
@@ -8,7 +9,6 @@ import DashboardContext, { DashboardContextType } from '@contexts/DashboardConte
 import logo from '../../../public/assets/logo.png';
 
 import styles from './Header.module.scss';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export const Header = (): JSX.Element => {
     const { wallet } = useContext(WalletContext);

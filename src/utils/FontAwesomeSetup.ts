@@ -1,6 +1,6 @@
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {
-    faCheck, faBuilding, faUser, faTimes, faClock
+    faCheck, faBuilding, faUser, faTimes, faClock, faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
 
 export const SetupFontAwesome = (): void => {
@@ -9,6 +9,7 @@ export const SetupFontAwesome = (): void => {
         faBuilding,
         faUser,
         faTimes,
-        faClock
+        faClock,
+        faFileSignature,
     );
 };
