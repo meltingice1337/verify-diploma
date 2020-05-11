@@ -15,6 +15,7 @@ export interface Certificate {
     details: SignableCertificateDetails;
     recipient: SignableCertificateRecipient;
     issuer: CertificateIssuer;
+    final?: boolean;
 }
 
 export interface CertificateForRecipient extends Certificate {

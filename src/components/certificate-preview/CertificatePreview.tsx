@@ -4,7 +4,6 @@ import { DecodeRawTransactionResult, TxnDetailsResult } from 'bitcoin-com-rest';
 import { toast } from 'react-toastify';
 
 import BitboxContext from '@contexts/BitboxContext';
-import WalletContext from '@contexts/WalletContext';
 
 import { SignableCertificateRecipient, SignableCertificateDetails } from '@utils/certificate/SignableCertificate.model';
 import { CertificateIssuer, Certificate } from '@utils/certificate/Certificate.model';
@@ -34,7 +33,6 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     const [tx, setTx] = useState<DecodedTransaction>();
 
     const { bitbox } = useContext(BitboxContext);
-    const { wallet } = useContext(WalletContext);
 
     const getTxData = async (txid: string): Promise<void> => {
         const tx = await bitbox.RawTransactions.getRawTransaction(txid, true);
@@ -63,12 +61,12 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
         </div>
     ));
 
-    const renderVerification = (type: GroupInfoType, meta: SignableCertificateRecipient | CertificateIssuer): JSX.Element | null => {
+    const renderVerification = (type: GroupInfoType): JSX.Element | null => {
         if (type !== 'recipient' && type !== 'issuer') {
             return null;
         }
 
-        const verification = type === 'issuer' ? props.data.issuer.verification : { publicKey: wallet!.account.getPublicKeyBuffer().toString('hex'), signature: props.data.recipient.verification!.signature };
+        const verification = type === 'issuer' ? props.data.issuer.verification : props.data.recipient.verification;
 
         if (verification) {
             const signableCertificate = toSignableCertificate(props.data as unknown as Certificate, type === 'issuer');
@@ -134,7 +132,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
             <div className={`${className} mb-5`}>
                 <div className="d-flex align-items-center mb-4">
                     <h3>{title}</h3>
-                    {renderVerification(type, object as unknown as SignableCertificateRecipient | CertificateIssuer)}
+                    {renderVerification(type)}
                 </div>
                 {imageField && object[imageField] && <img src={object[imageField] as string} className="img-fluid mb-4" />}
                 {textFields.map((key, i) => renderFieldInfo(i, (labelMap[key] || key) as string, object[key] as string))}
