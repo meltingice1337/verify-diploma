@@ -94,7 +94,6 @@ export const verifyCertificate = (verification: CertificateEntityVerification | 
         const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
         const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
         const normalizedCert = toNormalizedJSONCertObj(cert);
-        console.log({ normalizedCert });
         const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
     } catch (e) {

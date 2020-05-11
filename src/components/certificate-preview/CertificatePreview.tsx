@@ -71,7 +71,6 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
 
         if (verification) {
             const signableCertificate = toSignableCertificate(props.data as unknown as Certificate, type === 'issuer' && !!props.data.final);
-            console.log(signableCertificate);
             const verified = verifyCertificate(verification, signableCertificate, bitbox);
             return (
                 <div className={`${styles.verificationCheck} ${!verified ? styles.invalid : ''}`}>

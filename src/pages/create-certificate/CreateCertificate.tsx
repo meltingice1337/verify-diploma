@@ -237,7 +237,7 @@ const CreateCertificate = (): JSX.Element => {
     return (
         <>
             <h3 className="mb-3">Create a new certificate</h3>
-            <Stepper steps={['Issuer Details', 'Certificate Details', 'Certificate Preview', 'Published']} activeStep={activeStep} />
+            <Stepper steps={['Issuer Details', 'Certificate Details', 'Certificate Preview & Broadcast']} activeStep={activeStep} />
             <div className="page-content">
                 {renderStep()}
             </div>
