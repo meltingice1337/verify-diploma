@@ -51,16 +51,21 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
         }
     }, [props.data.txid]);
 
-    const renderFieldInfo = ((i: number, key: string, value?: string): JSX.Element => (
-        <div className="row mb-2" key={`${key}-${value}-${i}`}>
-            <div className="col-sm-5">
-                <p className="font-weight-bold text-capitalize">{key}</p>
+    const renderFieldInfo = ((i: number, key: string, value?: string): JSX.Element | null => {
+        if (value === undefined || value === null) {
+            return null;
+        }
+        return (
+            <div className="row mb-2" key={`${key}-${value}-${i}`}>
+                <div className="col-sm-5">
+                    <p className="font-weight-bold text-capitalize">{key}</p>
+                </div>
+                <div className="col-sm-7">
+                    {value?.toString()}
+                </div>
             </div>
-            <div className="col-sm-7">
-                {value?.toString()}
-            </div>
-        </div>
-    ));
+        );
+    });
 
     const renderVerification = (type: GroupInfoType): JSX.Element | null => {
         if (type !== 'recipient' && type !== 'issuer') {
