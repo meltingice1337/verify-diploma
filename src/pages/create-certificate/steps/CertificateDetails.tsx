@@ -110,7 +110,7 @@ export const CertificateDetails = (props: CertificateDetailsProps): JSX.Element 
                 </div>
             </div>
             <div className="form-group row">
-                <label htmlFor="recipientGovId" className="col-sm-2 col-form-label">Government ID</label>
+                <label htmlFor="recipientGovId" className="col-sm-2 col-form-label">Government ID*</label>
                 <div className="col-sm-10">
                     <input required name="recipientGovId" value={props.form.value.recipientGovId} type="text" className="form-control" id="recipientGovId" aria-describedby="recipientGovIdHelp" placeholder="Enter the recipient's government identification ..." onChange={onChange} />
                     <div className="invalid-feedback">This field is required</div>

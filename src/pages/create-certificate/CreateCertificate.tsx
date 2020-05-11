@@ -29,53 +29,53 @@ interface CreateCertificateLocationState {
 }
 
 const CreateCertificate = (): JSX.Element => {
-    const [activeStep, setActiveStep] = useState(2);
-    const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
-        value: {
-            name: 'Politehnica',
-            address: 'Maslinului nr 1',
-            email: 'poli@poli.ro',
-            govRegistration: 'ROG9123KS',
-            url: 'www.upt.ro',
-            imageFile: undefined,
-            imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
-        }
-    });
-    const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
-        value: {
-            certificateTitle: 'JS Engineer',
-            certificateSubtitle: 'Best engineer in the west',
-            certificateDescription: 'This is given because of finishing the iures training program',
-            certificateImageFile: undefined,
-            certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
-            recipientEmail: 'dariuscostolas@yahoo.com',
-            recipientName: 'Darius Costolas',
-            recipientGovId: 'ya it`s me from the gov',
-        }
-    });
+    const [activeStep, setActiveStep] = useState(0);
     // const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
     //     value: {
-    //         name: '',
-    //         address: '',
-    //         email: '',
-    //         govRegistration: '',
-    //         url: '',
+    //         name: 'Politehnica',
+    //         address: 'Maslinului nr 1',
+    //         email: 'poli@poli.ro',
+    //         govRegistration: 'ROG9123KS',
+    //         url: 'www.upt.ro',
     //         imageFile: undefined,
-    //         imageUrl: ''
+    //         imageUrl: 'http://upt.ro/images/universitatea-politehnica-timisoara.jpg'
     //     }
     // });
     // const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
     //     value: {
-    //         certificateTitle: '',
-    //         certificateSubtitle: '',
-    //         certificateDescription: '',
+    //         certificateTitle: 'JS Engineer',
+    //         certificateSubtitle: 'Best engineer in the west',
+    //         certificateDescription: 'This is given because of finishing the iures training program',
     //         certificateImageFile: undefined,
-    //         certificateImageUrl: '',
-    //         recipientEmail: '',
-    //         recipientName: '',
-    //         recipientGovId: '',
+    //         certificateImageUrl: 'https://www.mvps.net/docs/wp-content/uploads/2019/10/javascript2.png',
+    //         recipientEmail: 'dariuscostolas@yahoo.com',
+    //         recipientName: 'Darius Costolas',
+    //         recipientGovId: 'ya it`s me from the gov',
     //     }
     // });
+    const [issuerForm, setIssuerForm] = useState<FormWithErrors<IssuerDetailsFormData>>({
+        value: {
+            name: '',
+            address: '',
+            email: '',
+            govRegistration: '',
+            url: '',
+            imageFile: undefined,
+            imageUrl: ''
+        }
+    });
+    const [detailsForm, setDetailsForm] = useState<FormWithErrors<CertificateDetailsFormData>>({
+        value: {
+            certificateTitle: '',
+            certificateSubtitle: '',
+            certificateDescription: '',
+            certificateImageFile: undefined,
+            certificateImageUrl: '',
+            recipientEmail: '',
+            recipientName: '',
+            recipientGovId: '',
+        }
+    });
     const [transactionData, setTransactionData] = useState<CertificatePreviewData>();
     const [signedCertificate, setSignedCertificate] = useState<Certificate>();
 
@@ -86,6 +86,7 @@ const CreateCertificate = (): JSX.Element => {
 
     useEffect(() => {
         const transformTxData = async (): Promise<CertificatePreviewData> => ({
+            id: signedCertificate?.id,
             recipient: {
                 name: detailsForm.value.recipientName,
                 email: detailsForm.value.recipientEmail,
@@ -96,7 +97,7 @@ const CreateCertificate = (): JSX.Element => {
                 title: detailsForm.value.certificateTitle,
                 subtitle: detailsForm.value.certificateSubtitle,
                 description: detailsForm.value.certificateDescription,
-                issuedOn: new Date(),
+                issuedOn: signedCertificate?.details.issuedOn || new Date(),
                 imageUrl: detailsForm.value.certificateImageUrl || await imageFileToBase64(detailsForm.value.certificateImageFile)
             },
             issuer: {

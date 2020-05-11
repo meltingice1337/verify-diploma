@@ -71,7 +71,6 @@ export const DashboardIssuer = (): JSX.Element => {
                         toast.error('You did not issue this certificate !');
                         return;
                     }
-
                     setCertificate(certificate);
                     setCertsStorage([...certificatesTableData.map(ctd => ctd.meta), certificate]);
                     setModalShow(true);

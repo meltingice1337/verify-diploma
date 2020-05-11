@@ -19,6 +19,7 @@ export interface CertificatePreviewData {
     issuer: CertificateIssuer;
     txid?: string;
     id?: string;
+    final?: boolean;
 }
 
 interface CertificatePreviewProps {
@@ -69,7 +70,8 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
         const verification = type === 'issuer' ? props.data.issuer.verification : props.data.recipient.verification;
 
         if (verification) {
-            const signableCertificate = toSignableCertificate(props.data as unknown as Certificate, type === 'issuer');
+            const signableCertificate = toSignableCertificate(props.data as unknown as Certificate, type === 'issuer' && !!props.data.final);
+            console.log(signableCertificate);
             const verified = verifyCertificate(verification, signableCertificate, bitbox);
             return (
                 <div className={`${styles.verificationCheck} ${!verified ? styles.invalid : ''}`}>
@@ -90,9 +92,9 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                     <div className="d-flex align-items-center mb-4">
                         <h3>Transaction Details</h3>
                         {
-                            <div className={`${styles.verificationCheck} ${tx.confirmations === 0 ? styles.pending : ''} ${!valid ? styles.invalid : ''}`}>
+                            <div className={`${styles.verificationCheck} ${(tx.confirmations === 0 || !tx.confirmations) ? styles.pending : ''} ${!valid ? styles.invalid : ''}`}>
                                 {valid && tx.confirmations > 0 && <><FontAwesomeIcon icon="check" className={styles.icon} /> Certificate verified</>}
-                                {valid && tx.confirmations === 0 && <><FontAwesomeIcon icon="check" className={styles.icon} /> Pending mining</>}
+                                {valid && (tx.confirmations === 0 || !tx.confirmations) && <><FontAwesomeIcon icon="clock" className={styles.icon} /> Pending mining</>}
                                 {!valid && <><FontAwesomeIcon icon="times" className={styles.icon} />Invalid</>}
                             </div>
                         }

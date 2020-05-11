@@ -21,7 +21,7 @@ export const generateCertUUID = (cert: Partial<SignableCertificate>): string => 
 export const toNormalizedJSONCertObj = <T extends object>(obj: T): string => {
     if (typeof obj === 'object' && !Array.isArray(obj) && !(obj instanceof Date)) {
         return Object.keys(obj as object)
-            .filter(k => (obj)[k as keyof T] !== undefined && obj[k as keyof T] !== null)
+            .filter(k => (obj)[k as keyof T] !== undefined && obj[k as keyof T] !== null && (obj[k as keyof T] as unknown) !== '')
             .sort((key1, key2) => key1 > key2 ? 1 : -1)
             .reduce((acc, key, i, iArr): string => acc.concat(`${JSON.stringify(key)}:${toNormalizedJSONCertObj(obj[key as keyof T] as unknown as object)}${i === iArr.length - 1 ? '}' : ','}`), '{');
     } else if (Array.isArray(obj)) {
@@ -94,6 +94,7 @@ export const verifyCertificate = (verification: CertificateEntityVerification | 
         const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
         const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
         const normalizedCert = toNormalizedJSONCertObj(cert);
+        console.log({ normalizedCert });
         const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
     } catch (e) {
