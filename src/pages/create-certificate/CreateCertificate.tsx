@@ -181,7 +181,7 @@ const CreateCertificate = (): JSX.Element => {
             const txid = await bitbox.RawTransactions.sendRawTransaction(tx);
             cert.txid = txid;
             cert.final = true;
-            downloadCertificate(cert);
+            downloadCertificate(cert, `${cert.id}-${cert.recipient.email}-${cert.recipient.name}-final`);
             toast.success(`The certificate was published, txid: ${txid}`);
             router.push('/dashboard');
         }
