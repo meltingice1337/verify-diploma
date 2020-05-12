@@ -1,10 +1,11 @@
 const zmq = require("zeromq")
 var bitcoin = require('bitcoinjs-lib');
+const MongoClient = require('mongodb').MongoClient;
 
 async function run() {
     const sock = new zmq.Subscriber
 
-    sock.connect("tcp://127.0.0.1:3000")
+    sock.connect("tcp://bch-node:3000")
     sock.subscribe("rawblock")
     console.log("Subscriber connected to port 3000")
 
@@ -16,4 +17,14 @@ async function run() {
     }
 }
 
+
+async function connectDb() {
+    const uri = "mongodb://mongo:27017/db";
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+        console.error({ err });
+    });
+}
+
+connectDb();
 run()

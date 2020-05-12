@@ -1,10 +1,22 @@
 version: "3.8"
 services:
-    app:
+    bch-node:
+        container_name: vd-bch-node
         build: ./bch-node
-        ports: 
-            - 3000:3000
-            - 8332:8332
         volumes: 
             - ./bch-node/bitcoin:/home/bitcoin
             - ./bch-node/data:/home/.data
+    processor:
+        container_name: vd-processor
+        build: ./processor
+        ports: 
+            - 44523:44523
+        volumes:
+            - ./processor:/usr/src/processor
+        depends_on:
+            - mongo
+            - bch-node
+    mongo:
+        container_name: vd-mongo
+        image: mongo
+    
