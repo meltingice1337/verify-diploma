@@ -45,7 +45,7 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
 
     const [{ canDrop, isOver }, drop] = useDrop({
         accept: [NativeTypes.FILE],
-        drop(item, monitor) {
+        drop(_, monitor) {
             handleFileDrop(monitor);
         },
         collect: (monitor) => ({
@@ -61,9 +61,9 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
 
     const renderHeader = (): JSX.Element => {
         return (
-            <nav className="navbar navbar-light bg-white">
+            <nav className="navbar navbar-light bg-white p-3">
                 <a className="navbar-brand">
-                    <img src={logo} className="mr-2" width="30" height="30" alt="" />
+                    <img src={logo} className="mr-2" width="40" height="40" alt="" />
                     Verify Diploma
                 </a>
                 <div className="navbar-nav">

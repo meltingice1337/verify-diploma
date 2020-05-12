@@ -27,7 +27,7 @@ export const Header = (): JSX.Element => {
     return (
         <nav className="navbar navbar-light bg-white">
             <a className="navbar-brand">
-                <img src={logo} className="mr-2" width="30" height="30" alt="" />
+                <img src={logo} className="mr-2" width="40" height="40" alt="" />
                 Verify Diploma
             </a>
             <div className={`navbar-nav flex-row ml-4 ${styles.dashboardContextContainer}`}>
