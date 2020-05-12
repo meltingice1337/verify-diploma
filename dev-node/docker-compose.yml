@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+    app:
+        build: ./bch-node
+        ports: 
+            - 3000:3000
+            - 8332:8332
+        volumes: 
+            - ./bch-node/bitcoin:/home/bitcoin
+            - ./bch-node/data:/home/.data

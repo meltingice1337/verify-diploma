@@ -102,3 +102,4 @@ dist
 
 # Custom made ignores
 dist
+dev-node/bch-node/data/regtest
