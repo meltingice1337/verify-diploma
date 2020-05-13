@@ -71,7 +71,6 @@
     },
     "ignorePatterns": [
         "webpack.config.js",
-        "babel.config.js",
-        "dev-node"
+        "babel.config.js"
     ]
 }

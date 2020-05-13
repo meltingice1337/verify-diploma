@@ -177,8 +177,9 @@ const CreateCertificate = (): JSX.Element => {
         }
         const result = encodeCertTx(bitbox, cert, 'create');
         const tx = await createCertTx(result, wallet!, bitbox);
+        console.log({ tx });
         if (tx) {
-            const txid = await bitbox.RawTransactions.sendRawTransaction(tx);
+            const txid = await fetch(`http://localhost:3000/v1/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
             cert.txid = txid;
             cert.final = true;
             downloadCertificate(cert, `${cert.id}-${cert.recipient.email}-${cert.recipient.name}-final`);

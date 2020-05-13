@@ -7,7 +7,7 @@ import useLocalStorage from '@rehooks/local-storage';
 
 import { routes } from './routes';
 
-import { WalletProvider, WalletData } from '@contexts/WalletContext';
+import { WalletProvider, WalletData, AddressDetails } from '@contexts/WalletContext';
 import { DashboardContextType, DashboardProvider } from '@contexts/DashboardContext';
 import { LoadingProvider } from '@contexts/LoadingContext';
 import { BitboxProvider } from '@contexts/BitboxContext';
@@ -16,7 +16,7 @@ import { Spinner } from '@components/spinner/Spinner';
 
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
-    const [bitbox] = useState(new BITBOX({ restURL: TREST_URL }));
+    const [bitbox] = useState(new BITBOX({ restURL: 'http://localhost:3000/v1/' }));
     const [isLoading, setIsLoading] = useState(false);
     const [dashboardCtx, setDashboardCtx] = useState<DashboardContextType>('issuer');
 
@@ -28,7 +28,7 @@ const App = (): JSX.Element => {
         const masterNode = bitbox.HDNode.fromSeed(seed, 'testnet');
         const account = masterNode.derivePath('m/44\'/1\'/0\'/0/0') as HDNode;
 
-        const addressDetails = await bitbox.Address.details(account.getAddress()) as AddressDetailsResult;
+        const addressDetails = await fetch(`http://localhost:44523/address/${account.getAddress()}/balance`).then(res => res.json());
         setWalletData({ account, addressDetails });
         setIsLoading(false);
     };

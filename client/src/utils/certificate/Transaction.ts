@@ -34,7 +34,7 @@ export const encodeCertTx = (bitbox: BITBOX, certificate: Certificate, type: key
 
 export const createCertTx = async (script: Buffer, wallet: WalletData, bitbox: BITBOX): Promise<string | null> => {
     const address = wallet.account.getAddress();
-    const utxos = await bitbox.Address.utxo(address);
+    const utxos = await fetch(`http://localhost:44523/address/${address}/utxos`).then(res => res.json());
     const txBuilder = new bitbox.TransactionBuilder('testnet') as TransactionBuilder;
     if (!Array.isArray(utxos)) {
         const utxo = utxos.utxos?.[0];

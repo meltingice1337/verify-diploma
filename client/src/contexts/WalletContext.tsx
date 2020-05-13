@@ -2,9 +2,14 @@ import { createContext } from 'react';
 import { HDNode } from 'bitcoincashjs-lib';
 import { AddressDetailsResult } from 'bitcoin-com-rest';
 
+export interface AddressDetails {
+    balance: number;
+    satoshis: number;
+}
+
 export interface WalletData {
     account: HDNode;
-    addressDetails: AddressDetailsResult;
+    addressDetails: AddressDetails;
 }
 
 interface WalletContextValue {

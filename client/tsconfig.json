@@ -58,6 +58,5 @@
     ],
     "exclude": [
         "node_modules",
-        "dev-node"
     ],
 }
