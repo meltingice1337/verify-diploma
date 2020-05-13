@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     pango-dev \
     cairo-dev \
     giflib-dev \
+    git \
     python \
     ;
 
@@ -22,4 +23,4 @@ COPY . .
 
 RUN npm i -g nodemon
 
-CMD [ "nodemon", "app.js" ]
+CMD [ "nodemon", "./src/app.js" ]

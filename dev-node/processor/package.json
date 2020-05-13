@@ -4,13 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bitbox-sdk": "^8.11.2",
     "bitcoinjs-lib": "^5.1.7",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "mongodb": "^3.5.7",
     "zeromq": "^6.0.0-beta.6"
   }
