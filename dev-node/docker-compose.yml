@@ -19,4 +19,14 @@ services:
     mongo:
         container_name: vd-mongo
         image: mongo
-    
+    bitbox-rest:
+        container_name: vd-bitbox-rest
+        build: ./bitbox-rest
+        environment: 
+            - RPC_BASEURL=http://bch-node:8332
+            - RPC_USERNAME=test
+            - RPC_PASSWORD=test
+            - ZEROMQ_URL=bch-node
+            - ZEROMQ_PORT=3000
+        ports: 
+            - 3000:3000

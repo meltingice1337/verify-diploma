@@ -1,6 +1,6 @@
 FROM node:12-alpine
 
-WORKDIR /usr/src/processor
+WORKDIR /usr/src/bitbox-rest
 
 RUN apk add --no-cache \
     build-base \
@@ -12,14 +12,13 @@ RUN apk add --no-cache \
     cairo-dev \
     giflib-dev \
     python \
+    git \
     ;
 
-COPY package*.json ./
+COPY ./rest.bitbox.earth/package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY ./rest.bitbox.earth/ .
 
-RUN npm i -g nodemon
-
-CMD [ "nodemon", "app.js" ]
+CMD [ "npm", "start" ]
