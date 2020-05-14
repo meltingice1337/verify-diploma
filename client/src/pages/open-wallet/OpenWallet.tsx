@@ -6,6 +6,8 @@ import { writeStorage } from '@rehooks/local-storage';
 import BitboxContext from '@contexts/BitboxContext';
 import WalletContext from '@contexts/WalletContext';
 
+import { useRouter } from '@hooks/RouterHook';
+
 import logo from '../../../public/assets/logo.png';
 
 import { AES } from '@utils/Crypto';
@@ -17,6 +19,8 @@ const OpenWallet = (): JSX.Element => {
 
     const { bitbox } = useContext(BitboxContext);
     const { setWallet } = useContext(WalletContext);
+
+    const router = useRouter();
 
     const onEnterMnemonicClick = (): void => {
         if (form.mnemonic.split(' ').length !== 12) {
@@ -38,6 +42,7 @@ const OpenWallet = (): JSX.Element => {
             const encWallet = AES.encrypt(mnemonic, pin);
             writeStorage('wallet', encWallet);
             setWallet(mnemonic);
+            router.push('/dashboard');
         }
     };
 
@@ -93,7 +98,7 @@ const OpenWallet = (): JSX.Element => {
             <div className="authentication-container p-5">
                 <div className="d-flex align-items-center">
                     <img className="logo" src={logo} alt="logo" />
-                    <h2 className="ml-4">Create Wallet</h2>
+                    <h2 className="ml-4">Open Wallet</h2>
                 </div>
                 <div className="mt-5 d-flex flex-column ">
                     {renderStep()}

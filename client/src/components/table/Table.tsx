@@ -5,11 +5,17 @@ export interface TableRow<T> {
     meta: T;
 }
 
+export interface TableCustomRender<T> {
+    render: (data: TableRow<T>) => JSX.Element;
+    index: number;
+}
+
 export interface TableProps<T> {
     columns: string[];
     data: TableRow<T>[];
     emptyLabel?: string;
     onRowClick?: (data: T) => void;
+    customRenders?: TableCustomRender<T>[];
 }
 
 export const Table = <T extends object>(props: TableProps<T>): JSX.Element => {
@@ -17,6 +23,11 @@ export const Table = <T extends object>(props: TableProps<T>): JSX.Element => {
         if (props.onRowClick) {
             props.onRowClick(data);
         }
+    };
+
+    const renderCell = (row: TableRow<T>, cell: string, iRow: number, iCol: number): JSX.Element => {
+        const customRender = props.customRenders?.find(cr => cr.index === iCol);
+        return <td key={`cell-${iRow}-${iCol}`}>{customRender?.render(row) || cell}</td>;
     };
 
     return (
@@ -33,7 +44,7 @@ export const Table = <T extends object>(props: TableProps<T>): JSX.Element => {
                         onClick={onRowClick.bind(null, row.meta)}
                         className={props.onRowClick ? 'clickable' : undefined}
                     >
-                        {row.data.map((cell, iCell) => <td key={`cell-${iRow}-${iCell}`}>{cell}</td>)}
+                        {props.columns.map((cell, iCol) => renderCell(row, row.data[iCol], iRow, iCol))}
                     </tr>
                 )}
                 {props.data.length === 0 ? <tr><td colSpan={props.columns.length}>{props.emptyLabel || 'You have no certificates yet !'}</td></tr> : null}

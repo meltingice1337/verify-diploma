@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ChangeEvent, useContext } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent, useContext, MouseEvent } from 'react';
 import { Switch, Route, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useLocalStorage from '@rehooks/local-storage';
@@ -15,6 +15,7 @@ import { useRouter } from '@hooks/RouterHook';
 
 import { readCertificate, toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 import { Certificate } from '@utils/certificate/Certificate.model';
+import { encodeCertTx, createCertTx } from '@utils/certificate/Transaction';
 
 export const DashboardIssuer = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);
@@ -52,6 +53,11 @@ export const DashboardIssuer = (): JSX.Element => {
         const file = event.target.files?.[0];
         if (file) {
             const certificate = await readCertificate(file);
+            if (certificatesTableData.find(ctd => ctd.meta.id === certificate!.id) !== undefined) {
+                toast.error('Certificate already imported !');
+                return;
+            }
+
             if (certificate) {
                 if (!certificate.final) {
                     const signableCertificate = toSignableCertificate(certificate);
@@ -84,6 +90,22 @@ export const DashboardIssuer = (): JSX.Element => {
         setModalShow(true);
     };
 
+    const onRevokeCertificate = async (cert: Certificate, event: MouseEvent): Promise<void> => {
+        event.stopPropagation();
+
+        const encoded = encodeCertTx(bitbox, cert, 'revoke');
+        const tx = await createCertTx(encoded, wallet!, bitbox);
+        const txid = await fetch(`http://localhost:3000/v1/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
+
+        if (txid) {
+            toast.success('Certificate revoked successfully !');
+        }
+    };
+
+    const renderRevoke = (row: TableRow<Certificate>): JSX.Element => {
+        return <button className="btn btn-danger" onClick={onRevokeCertificate.bind(null, row.meta)}>Revoke</button>;
+    };
+
     const renderDefault = (): JSX.Element | null => {
         if (!defaultRoute) {
             return null;
@@ -100,7 +122,13 @@ export const DashboardIssuer = (): JSX.Element => {
                     </div>
                     <div className="d-flex mt-3">
                         <div className="table-responsive">
-                            <Table columns={['Title', 'Issued On', 'Recipient name', 'Recipient email']} emptyLabel="You have not issued certificates yet" data={certificatesTableData} onRowClick={onRowClick} />
+                            <Table
+                                customRenders={[{ index: 4, render: renderRevoke }]}
+                                columns={['Title', 'Issued On', 'Recipient name', 'Recipient email', '']}
+                                emptyLabel="You have not issued certificates yet"
+                                data={certificatesTableData}
+                                onRowClick={onRowClick}
+                            />
                         </div>
                     </div>
                 </div>
