@@ -5,8 +5,7 @@ const { MongoClient, Db } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 
-const { getUTXOQuery } = require('./queries');
-
+const { getUTXOQuery, getTXByPartialScriptQuery } = require('./queries');
 
 /**
  * 
@@ -80,7 +79,7 @@ async function runExpress(db) {
     app.use(cors());
     const port = 44523;
 
-    app.get('/address/:addr/balance', async (req, res, next) => {
+    app.get('/address/:addr/balance', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
         const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer)).toArray();
         const satoshis = utxos.reduce((acc, utxo) => acc + utxo.outs.find(o => o.script.includes(addressBuffer)).value, 0);
@@ -88,7 +87,7 @@ async function runExpress(db) {
         res.json({ balance, satoshis });
     });
 
-    app.get('/address/:addr/utxos', async (req, res, next) => {
+    app.get('/address/:addr/utxos', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
         const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer)).toArray();
         const mappedUtxos = utxos.map(utxo => {
@@ -99,8 +98,18 @@ async function runExpress(db) {
                 vout: outIndex,
                 satoshis: outSatoshis
             }
-        })
-        res.json({ utxos: mappedUtxos })
+        });
+        res.json({ utxos: mappedUtxos });
+    });
+
+    app.get('/transactions/opreturn/:partScript/:inputPK', async (req, res) => {
+        if (!req.params.inputPK || !req.params.partScript) {
+            return [];
+        }
+
+        const bestBlockHeight = await (await db.collection('blocks')).countDocuments();
+        const txs = await db.collection('blocks').aggregate(getTXByPartialScriptQuery(req.params.partScript, req.params.inputPK)).toArray();
+        res.json(txs.map(tx => ({ ...tx, confirmations: bestBlockHeight - tx.blockHeight + 1 })));
     });
 
     app.listen(port, () => {
