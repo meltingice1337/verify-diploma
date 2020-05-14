@@ -37,7 +37,7 @@ async function runZMQ(db) {
                     hash: t.getHash().toString('hex')
                 }
             })
-            const height = (await (await db.collection('blocks')).count() + 1);
+            const height = (await (await db.collection('blocks')).countDocuments() + 1);
             (await db.createCollection('blocks')).insertOne({
                 ...block,
                 merkleRoot: blkMerkleRoot,
