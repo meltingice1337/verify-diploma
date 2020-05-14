@@ -4,14 +4,47 @@ import { Certificate } from './Certificate.model';
 import { WalletData } from '@contexts/WalletContext';
 
 import { hashCertificate, toSignableCertificate } from './Certificate';
-import { DecodeRawTransactionResult, TxnDetailsResult } from 'bitcoin-com-rest';
 
 export const NETWORK_UUID = '22ab1ed2e6090763dc744f';
+
+export interface RawTx {
+    version: number;
+    locktime: number;
+    ins: {
+        hash: string;
+        index: number;
+        script: string;
+        sequence: string;
+    }[];
+    outs: {
+        value: number;
+        script: string;
+    }[];
+    id: string;
+    hash: string;
+    blockTime: number;
+    blockHeight: number;
+    confirmations: number;
+}
 
 export const CERTIFICATE_ACTION_TYPE = {
     create: '0',
     revoke: '1'
 };
+
+export interface TxCertValidation {
+    broadcasted: boolean;
+    validIssuer: boolean;
+    validated: boolean;
+    details?: {
+        blockTime: string | null;
+        confirmations: number;
+        created: boolean;
+        revoked: boolean;
+        creationTime?: string | null;
+        revocationTime?: string | null;
+    };
+}
 
 export interface DecodedTransaction {
     certHash: string | null;
@@ -54,15 +87,14 @@ export const createCertTx = async (script: Buffer, wallet: WalletData, bitbox: B
     return null;
 };
 
-export const decodeTransaction = (tx: DecodeRawTransactionResult & TxnDetailsResult, bitbox: BITBOX): DecodedTransaction | null => {
+export const decodeTransaction = (tx: RawTx, bitbox: BITBOX): DecodedTransaction | null => {
     try {
-        const inputScript = bitbox.Script.decode(bitbox.Script.fromASM(tx.vin[0].scriptSig.asm));
+        const inputScript = bitbox.Script.decode(Buffer.from(tx.ins[0].script, 'hex'));
         const publicKey = (inputScript[1] as Buffer).toString('hex');
-        const outputScript = bitbox.Script.fromASM(tx.vout[0].scriptPubKey.asm);
-        if (!bitbox.Script.checkNullDataOutput(outputScript)) {
+        if (!bitbox.Script.checkNullDataOutput(Buffer.from(tx.outs[0].script, 'hex'))) {
             throw new Error('Output is not an OP_RETURN script');
         }
-        const data = bitbox.Script.decodeNullDataOutput(outputScript);
+        const [, data] = bitbox.Script.decode(Buffer.from(tx.outs[0].script, 'hex')) as Buffer[];
         const networkUUID = data.slice(0, 11).toString('hex');
         if (networkUUID !== NETWORK_UUID) {
             throw new Error('This tx is not party of this system');
@@ -80,10 +112,44 @@ export const decodeTransaction = (tx: DecodeRawTransactionResult & TxnDetailsRes
             certHash,
             certId,
             type,
-            blockTime: tx.confirmations > 0 ? new Date(tx.blocktime * 1000).toISOString() : null
+            blockTime: tx.confirmations > 0 ? new Date(tx.blockTime * 1000).toISOString() : null
         };
     } catch (e) {
+        // eslint-disable-next-line no-console
         console.error('error while decoding the tx', e);
         return null;
     }
+};
+
+
+export const getTxByCertId = async (certId: string, inputPK?: string): Promise<RawTx[]> => {
+    const scriptPart = `${NETWORK_UUID}${certId}`;
+    return await fetch(`http://localhost:44523/transactions/opreturn/${scriptPart}/${inputPK}`).then(res => res.json());
+};
+
+export const validateTxCert = (cert: Certificate, txs: (DecodedTransaction | null)[]): TxCertValidation => {
+    if (txs.length === 0) {
+        return { broadcasted: !!cert.final, validated: false, validIssuer: false };
+    }
+
+    const filteredTxs = txs.filter(f => !!f) as DecodedTransaction[];
+
+    const creationTx = filteredTxs.find(t => t.type === CERTIFICATE_ACTION_TYPE.create);
+    const revocationTx = filteredTxs.find(t => t.type === CERTIFICATE_ACTION_TYPE.revoke);
+    const hash = hashCertificate(toSignableCertificate(cert, true, true));
+    const validIssuer = creationTx?.inputPublicKey === cert.issuer.verification?.publicKey;
+
+    return {
+        broadcasted: true,
+        validated: hash === creationTx?.certHash,
+        validIssuer,
+        details: {
+            blockTime: revocationTx ? revocationTx.blockTime : creationTx!.blockTime,
+            confirmations: (revocationTx ? revocationTx.confirmations : creationTx?.confirmations) || 0,
+            created: creationTx !== undefined,
+            creationTime: creationTx?.blockTime,
+            revoked: revocationTx !== undefined,
+            revocationTime: revocationTx?.blockTime
+        }
+    };
 };

@@ -1,13 +1,12 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { RouteComponentProps, Route, RouteProps, Switch } from 'react-router-dom';
-import { BITBOX, TREST_URL } from 'bitbox-sdk';
+import { BITBOX } from 'bitbox-sdk';
 import { HDNode } from 'bitcoincashjs-lib';
-import { AddressDetailsResult } from 'bitcoin-com-rest';
 import useLocalStorage from '@rehooks/local-storage';
 
 import { routes } from './routes';
 
-import { WalletProvider, WalletData, AddressDetails } from '@contexts/WalletContext';
+import { WalletProvider, WalletData } from '@contexts/WalletContext';
 import { DashboardContextType, DashboardProvider } from '@contexts/DashboardContext';
 import { LoadingProvider } from '@contexts/LoadingContext';
 import { BitboxProvider } from '@contexts/BitboxContext';

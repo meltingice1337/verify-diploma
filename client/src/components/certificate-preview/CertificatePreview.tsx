@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DecodeRawTransactionResult, TxnDetailsResult } from 'bitcoin-com-rest';
-import { toast } from 'react-toastify';
 
 import BitboxContext from '@contexts/BitboxContext';
 
@@ -10,8 +8,8 @@ import { CertificateIssuer, Certificate } from '@utils/certificate/Certificate.m
 
 import styles from './CertificatePreview.module.scss';
 
-import { decodeTransaction, DecodedTransaction } from '@utils/certificate/Transaction';
-import { hashCertificate, toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
+import { decodeTransaction, getTxByCertId, validateTxCert, TxCertValidation } from '@utils/certificate/Transaction';
+import { toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 
 export interface CertificatePreviewData {
     recipient: SignableCertificateRecipient;
@@ -31,25 +29,21 @@ type GroupInfoObject<T> = { [key in keyof Exclude<T, object>]: string };
 type GroupInfoType = 'issuer' | 'details' | 'recipient';
 
 export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element => {
-    const [tx, setTx] = useState<DecodedTransaction>();
+    const [txValidation, setTxValidation] = useState<TxCertValidation>();
 
     const { bitbox } = useContext(BitboxContext);
 
-    const getTxData = async (txid: string): Promise<void> => {
-        const tx = await bitbox.RawTransactions.getRawTransaction(txid, true);
-        const decoded = decodeTransaction((tx as unknown as DecodeRawTransactionResult & TxnDetailsResult), bitbox);
-        if (decoded) {
-            setTx(decoded);
-        } else {
-            toast.error('Could not decode transaction');
-        }
+    const getTxData = async (cetId: string): Promise<void> => {
+        const txs = await getTxByCertId(cetId, props.data.issuer.verification?.publicKey);
+        const decodedTxs = txs.map((tx) => decodeTransaction(tx, bitbox));
+        setTxValidation(validateTxCert(props.data as unknown as Certificate, decodedTxs));
     };
 
     useEffect(() => {
-        if (props.data.txid) {
-            getTxData(props.data.txid);
+        if (props.data.final, props.data.id) {
+            getTxData(props.data.id);
         }
-    }, [props.data.txid]);
+    }, [props.data.final, props.data.id]);
 
     const renderFieldInfo = ((i: number, key: string, value?: string): JSX.Element | null => {
         if (value === undefined || value === null) {
@@ -88,20 +82,54 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     };
 
     const renderTxDetails = (): JSX.Element | null => {
-        if (tx) {
-            const hash = hashCertificate(toSignableCertificate(props.data as unknown as Certificate, true, true));
-            const valid = hash === tx?.certHash;
+        if (txValidation) {
+            const renderValidationTag = (): JSX.Element => {
+                if (txValidation.validated && txValidation.validIssuer) {
+                    if (!txValidation.details?.confirmations) {
+                        return (
+                            <div className={`${styles.verificationCheck} ${styles.pending}`}>
+                                <FontAwesomeIcon icon="clock" className={styles.icon} /> Pending mining
+                            </div>
+                        );
+                    } else {
+                        if (txValidation.details.revoked) {
+                            return (
+                                <div className={`${styles.verificationCheck} ${styles.invalid}`}>
+                                    <FontAwesomeIcon icon="times" className={styles.icon} />Certificate revoked
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div className={`${styles.verificationCheck}`}>
+                                    <FontAwesomeIcon icon="check" className={styles.icon} /> Certificate verified
+                                </div>);
+                        }
+                    }
+                } else {
+                    return (
+                        <div className={`${styles.verificationCheck} ${styles.invalid}`}>
+                            <FontAwesomeIcon icon="times" className={styles.icon} />Invalid sigs or issuer
+                        </div>
+                    );
+                }
+            };
+
+            if (!txValidation.broadcasted) {
+                return (
+                    <div className="col-sm-6 mb-5">
+                        <div className="d-flex align-items-center mb-4">
+                            <h3>Transaction Details</h3>
+                        </div>
+                        <p> Transaction not broadcasted yet</p>
+                    </div>
+                );
+            }
+
             return (
                 <div className="col-sm-6 mb-5">
                     <div className="d-flex align-items-center mb-4">
                         <h3>Transaction Details</h3>
-                        {
-                            <div className={`${styles.verificationCheck} ${(tx.confirmations === 0 || !tx.confirmations) ? styles.pending : ''} ${!valid ? styles.invalid : ''}`}>
-                                {valid && tx.confirmations > 0 && <><FontAwesomeIcon icon="check" className={styles.icon} /> Certificate verified</>}
-                                {valid && (tx.confirmations === 0 || !tx.confirmations) && <><FontAwesomeIcon icon="clock" className={styles.icon} /> Pending mining</>}
-                                {!valid && <><FontAwesomeIcon icon="times" className={styles.icon} />Invalid</>}
-                            </div>
-                        }
+                        {renderValidationTag()}
                     </div>
                     <div className="row mb-2">
                         <div className="col-sm-5">
@@ -116,7 +144,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                             <p className="font-weight-bold text-capitalize">Confirmations</p>
                         </div>
                         <div className="col-sm-7">
-                            {tx.confirmations}
+                            {txValidation.details?.confirmations || 'Unconfirmed'}
                         </div>
                     </div>
                     <div className="row mb-2">
@@ -124,7 +152,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                             <p className="font-weight-bold text-capitalize">Date time</p>
                         </div>
                         <div className="col-sm-7">
-                            {tx.blockTime}
+                            {txValidation.details?.blockTime}
                         </div>
                     </div>
                 </div >

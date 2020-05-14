@@ -97,6 +97,7 @@ export const verifyCertificate = (verification: CertificateEntityVerification | 
         const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
     } catch (e) {
+        // eslint-disable-next-line no-console
         console.error('error while verifying', e);
         return false;
     }

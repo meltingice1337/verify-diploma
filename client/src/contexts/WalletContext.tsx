@@ -1,6 +1,5 @@
 import { createContext } from 'react';
 import { HDNode } from 'bitcoincashjs-lib';
-import { AddressDetailsResult } from 'bitcoin-com-rest';
 
 export interface AddressDetails {
     balance: number;
