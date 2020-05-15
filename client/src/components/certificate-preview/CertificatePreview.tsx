@@ -84,26 +84,26 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     const renderTxDetails = (): JSX.Element | null => {
         if (txValidation) {
             const renderValidationTag = (): JSX.Element => {
+                if (txValidation.broadcasted && !txValidation.details?.confirmations) {
+                    return (
+                        <div className={`${styles.verificationCheck} ${styles.pending}`}>
+                            <FontAwesomeIcon icon="clock" className={styles.icon} /> Pending mining
+                        </div>
+                    );
+                }
+
                 if (txValidation.validated && txValidation.validIssuer) {
-                    if (!txValidation.details?.confirmations) {
+                    if (txValidation.details?.revoked) {
                         return (
-                            <div className={`${styles.verificationCheck} ${styles.pending}`}>
-                                <FontAwesomeIcon icon="clock" className={styles.icon} /> Pending mining
+                            <div className={`${styles.verificationCheck} ${styles.invalid}`}>
+                                <FontAwesomeIcon icon="times" className={styles.icon} />Certificate revoked
                             </div>
                         );
                     } else {
-                        if (txValidation.details.revoked) {
-                            return (
-                                <div className={`${styles.verificationCheck} ${styles.invalid}`}>
-                                    <FontAwesomeIcon icon="times" className={styles.icon} />Certificate revoked
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div className={`${styles.verificationCheck}`}>
-                                    <FontAwesomeIcon icon="check" className={styles.icon} /> Certificate verified
-                                </div>);
-                        }
+                        return (
+                            <div className={`${styles.verificationCheck}`}>
+                                <FontAwesomeIcon icon="check" className={styles.icon} /> Certificate verified
+                            </div>);
                     }
                 } else {
                     return (
