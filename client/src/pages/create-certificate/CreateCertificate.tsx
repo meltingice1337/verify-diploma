@@ -16,7 +16,7 @@ import { Certificate, CertificateForRecipient } from '@utils/certificate/Certifi
 
 import { imageFileToBase64 } from '@utils/Image';
 import { generateSignCertificate, downloadCertificate, toSignableCertificate, signCertificate } from '@utils/certificate/Certificate';
-import { encodeCertTx, createCertTx } from '@utils/certificate/Transaction';
+import { encodeCertTx, createCertTx, getTxByCertId } from '@utils/certificate/Transaction';
 
 export interface FormWithErrors<T> {
     value: T;
@@ -160,6 +160,12 @@ const CreateCertificate = (): JSX.Element => {
     }, [transactionData, activeStep, wallet]);
 
     const broadcastCertTx = async (): Promise<void> => {
+        const prevTx = await getTxByCertId(signedCertificate!.id, signedCertificate!.issuer.verification?.publicKey);
+        if (prevTx.length > 0) {
+            toast.error('Certificate already published !');
+            return;
+        }
+
         let cert: CertificateForRecipient | Certificate = signedCertificate!;
         if (cert?.recipient.verification) {
             const recipientSignedSig = signCertificate(toSignableCertificate(cert, true), wallet!);
