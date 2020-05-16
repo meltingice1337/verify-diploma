@@ -11,7 +11,7 @@ import styles from './Verifier.module.scss';
 import { Certificate } from '@utils/certificate/Certificate.model';
 import { readCertificate } from '@utils/certificate/Certificate';
 import { CertificatePreview } from '@components/certificate-preview/CertificatePreview';
-import { VerificationHistory } from '@components/verification-history/VerificationHistory';
+import { VerificationHistory, VerificationStepResult } from '@components/verification-history/VerificationHistory';
 
 export interface VerifierProps {
     onGoToDashboardClick: () => void;
@@ -20,6 +20,7 @@ export interface VerifierProps {
 export const Verifier = (props: VerifierProps): JSX.Element => {
 
     const [certificate, setCertificate] = useState<Certificate>();
+    const [verificationSteps, setVerificationSteps] = useState<[VerificationStepResult, boolean][]>();
 
 
     const processCertificate = async (file: File): Promise<void> => {
@@ -41,6 +42,7 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
 
             if (!files[0].name.endsWith('.json')) {
                 toast.error('The certificate should be in a json file');
+                return;
             }
 
             processCertificate(files[0]);
@@ -93,21 +95,39 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
         return null;
     };
 
+    const renderStatus = (): JSX.Element => {
+        if (verificationSteps) {
+            const bestVfStep = verificationSteps[verificationSteps.length - 1];
+            const valid = bestVfStep[1] && bestVfStep[0].key !== 'cert-tx-revoked';
+            return (
+                <div className={`page-content ${styles.verificationStatus} ${valid ? styles.valid : styles.invalid}`}>
+                    {valid && 'Valid certificate'}
+                    {!valid && bestVfStep[0].message}
+                </div>
+            );
+        } else {
+            return <div className={`page-content ${styles.verificationStatus} ${styles.processing}`}>Processing</div>;
+        }
+    };
+
     const renderCertificateVerification = (): JSX.Element | null => {
         if (certificate) {
             return (
-                <div className="row">
-                    <div className="col-sm-8">
-                        <div className="page-content">
-                            <CertificatePreview data={certificate} previewOnly />
+                <>
+                    {renderStatus()}
+                    <div className="row">
+                        <div className="col-sm-8">
+                            <div className="page-content">
+                                <CertificatePreview data={certificate} previewOnly />
+                            </div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="page-content">
+                                <VerificationHistory certificate={certificate} onFinish={(vs): void => setVerificationSteps(vs)} />
+                            </div>
                         </div>
                     </div>
-                    <div className="col-sm-4">
-                        <div className="page-content">
-                            <VerificationHistory certificate={certificate} />
-                        </div>
-                    </div>
-                </div>
+                </>
             );
         }
         return null;

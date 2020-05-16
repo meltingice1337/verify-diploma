@@ -32,3 +32,19 @@
         }
     }
 }
+
+.verificationStatus {
+    margin-bottom: 1.6rem;
+    height: auto;
+    width: 100%;
+    font-size: 2rem;
+    text-align: center;
+
+    &.valid {
+        color: green;
+    }
+
+    &.invalid {
+        color: red;
+    }
+}

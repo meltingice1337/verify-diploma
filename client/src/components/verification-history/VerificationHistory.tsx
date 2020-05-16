@@ -12,9 +12,10 @@ import { formatDate } from '@utils/Dates';
 
 export interface VerificationHistoryProps {
     certificate: Certificate;
+    onFinish: (verificationSteps: [VerificationStepResult, boolean][]) => void;
 }
 
-interface VerificationStepResult {
+export interface VerificationStepResult {
     message: string;
     valid: boolean;
     key: string;
@@ -25,7 +26,7 @@ type VerificationStepFnResult = [VerificationStepResult | null, boolean];
 
 export const VerificationHistory = (props: VerificationHistoryProps): JSX.Element => {
 
-    const [verificationSteps, setVerificationSteps] = useState<VerificationStepResult[]>([]);
+    const [verificationSteps, setVerificationSteps] = useState<[VerificationStepResult, boolean][]>([]);
     const [currentVerificationStep, setCurrentVerificationStep] = useState(0);
     const [processing, setProcessing] = useState(true);
     const [txCertValidation, setTxCertValidation] = useState<TxCertValidation>();
@@ -117,7 +118,7 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
     const processCurrentStep = async (): Promise<void> => {
         const [result, valid] = await verificationFns[currentVerificationStep]();
         if (result) {
-            setVerificationSteps([...verificationSteps, result]);
+            setVerificationSteps([...verificationSteps, [result, valid]]);
         }
 
         if (valid) {
@@ -135,13 +136,19 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
         }
     }, [currentVerificationStep]);
 
+    useEffect(() => {
+        if (!processing) {
+            props.onFinish(verificationSteps);
+        }
+    }, [processing]);
+
     const renderPlaceholder = (): JSX.Element | null => {
         return processing ? <div className={styles.verificationStep}><span className={styles.spinner} /></div> : null;
     };
 
     return (
         <div className={styles.verificationSteps}>
-            {verificationSteps.map(vs => renderStep(vs.message, vs.valid, vs.key, vs.timeField))}
+            {verificationSteps.map(vs => renderStep(vs[0].message, vs[0].valid, vs[0].key, vs[0].timeField))}
             {renderPlaceholder()}
         </div>
     );
