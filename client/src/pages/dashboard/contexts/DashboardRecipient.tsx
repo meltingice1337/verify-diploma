@@ -133,6 +133,7 @@ export const DashboardRecipient = (): JSX.Element => {
                 <div className="d-flex">
                     <button className="btn btn-primary" onClick={onAddCertificate}>Add certificate</button>
                     <input ref={fileRef} type="file" className="form-control-file" name="" id="" style={{ display: 'none' }} onChange={onFileChange} />
+                    <button className="btn btn-secondary ml-2" onClick={onAddCertificate}>Verify challenge</button>
                 </div>
                 <div className="d-flex mt-3">
                     <div className="table-responsive">

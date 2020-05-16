@@ -11,11 +11,9 @@ import { readFile } from '@utils/File';
 import { extractProperties } from '@utils/Objects';
 
 export const generateCertUUID = (cert: Partial<SignableCertificate>): string => {
-    const randomArr = crypto.randomBytes(32);
-    const randomStr = randomArr.reduce((str: string, value: number): string => str.concat(value.toString(16)), '');
+    const random = crypto.randomBytes(32).toString('hex');
     const certStr = JSON.stringify(cert);
-
-    return crypto.createHash('ripemd160').update(randomStr + certStr).digest('hex');
+    return crypto.createHash('ripemd160').update(random + certStr).digest('hex');
 };
 
 export const toNormalizedJSONCertObj = <T extends object>(obj: T): string => {

@@ -1,4 +1,4 @@
-import React, { MouseEvent, useState, useMemo } from 'react';
+import React, { MouseEvent, useState, useMemo, useEffect, ChangeEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NativeTypes } from 'react-dnd-html5-backend';
 import { toast } from 'react-toastify';
@@ -9,7 +9,7 @@ import logo from '../../../../public/assets/logo.png';
 import styles from './Verifier.module.scss';
 
 import { Certificate } from '@utils/certificate/Certificate.model';
-import { readCertificate } from '@utils/certificate/Certificate';
+import { readCertificate, generateCertUUID } from '@utils/certificate/Certificate';
 import { CertificatePreview } from '@components/certificate-preview/CertificatePreview';
 import { VerificationHistory, VerificationStepResult } from '@components/verification-history/VerificationHistory';
 
@@ -21,7 +21,10 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
 
     const [certificate, setCertificate] = useState<Certificate>();
     const [verificationSteps, setVerificationSteps] = useState<[VerificationStepResult, boolean][]>();
-
+    const [challengeForm, setChallengeForm] = useState({
+        challenge: '',
+        signature: ''
+    });
 
     const processCertificate = async (file: File): Promise<void> => {
         const cert = await readCertificate(file);
@@ -100,7 +103,7 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
             const bestVfStep = verificationSteps[verificationSteps.length - 1];
             const valid = bestVfStep[1] && bestVfStep[0].key !== 'cert-tx-revoked';
             return (
-                <div className={`page-content ${styles.verificationStatus} ${valid ? styles.valid : styles.invalid}`}>
+                <div className={`page-content mb-4 full ${styles.verificationStatus} ${valid ? styles.valid : styles.invalid}`}>
                     {valid && 'Valid certificate'}
                     {!valid && bestVfStep[0].message}
                 </div>
@@ -108,6 +111,43 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
         } else {
             return <div className={`page-content ${styles.verificationStatus} ${styles.processing}`}>Processing</div>;
         }
+    };
+
+    useEffect(() => {
+        if (certificate) {
+            setChallengeForm({ ...challengeForm, challenge: generateCertUUID(certificate) });
+        }
+    }, [certificate]);
+
+    const onFormChange = (event: ChangeEvent<HTMLInputElement>): void => {
+        setChallengeForm({ ...challengeForm, [event.target.name]: event.target.value });
+    };
+
+    const renderRecipientChallenge = (): JSX.Element | null => {
+        if (certificate && certificate.recipient.verification) {
+            return (
+                <div className="page-content mt-4 full">
+                    <div className="p-3">
+                        <div className="row align-items-center">
+                            Challenge
+                            <form className="col row">
+                                <div className="col-sm-4">
+                                    <input required type="text" name="challenge" className="form-control" placeholder="Challenge" value={challengeForm.challenge} onChange={onFormChange} />
+                                </div>
+                                <div className="col-sm-8">
+                                    <input required type="text" name="signature" className="form-control" placeholder="Recipient's response" value={challengeForm.signature} onChange={onFormChange} />
+                                </div>
+                            </form>
+                            <button className="btn btn-primary">Verify</button>
+                        </div>
+                        <div className="row mt-3">
+                            <p>Send the challenge to the recipient and input the recipient`s response</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
     };
 
     const renderCertificateVerification = (): JSX.Element | null => {
@@ -127,6 +167,7 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
                             </div>
                         </div>
                     </div>
+                    {renderRecipientChallenge()}
                 </>
             );
         }
