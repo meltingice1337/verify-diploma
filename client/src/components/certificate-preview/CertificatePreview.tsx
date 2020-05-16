@@ -10,6 +10,7 @@ import styles from './CertificatePreview.module.scss';
 
 import { decodeTransaction, getTxByCertId, validateTxCert, TxCertValidation } from '@utils/certificate/Transaction';
 import { toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
+import { formatDate } from '@utils/Dates';
 
 export interface CertificatePreviewData {
     recipient: SignableCertificateRecipient;
@@ -26,6 +27,8 @@ interface CertificatePreviewProps {
 }
 
 type GroupInfoObject<T> = { [key in keyof Exclude<T, object>]: string };
+
+type GroupInfoTransformer<T> = { [key in keyof Exclude<T, object>]: { label: string; format: <T extends unknown>(value: T) => string } }
 
 type GroupInfoType = 'issuer' | 'details' | 'recipient';
 
@@ -153,7 +156,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                             <p className="font-weight-bold text-capitalize">Date time</p>
                         </div>
                         <div className="col-sm-7">
-                            {txValidation.details?.blockTime}
+                            {formatDate(txValidation.details?.blockTime || '')}
                         </div>
                     </div>
                 </div >
@@ -162,7 +165,15 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
         return null;
     };
 
-    const renderGroupInfo = <T extends unknown>(type: GroupInfoType, className: string, title: string, object: GroupInfoObject<T>, labelMap: Partial<GroupInfoObject<T>>, textFields: (keyof T)[], imageField?: keyof T): JSX.Element => {
+    const renderGroupInfo = <T extends unknown>(
+        type: GroupInfoType,
+        className: string,
+        title: string,
+        object: GroupInfoObject<T>,
+        transformers: GroupInfoTransformer<T>,
+        textFields: (keyof T)[],
+        imageField?: keyof T
+    ): JSX.Element => {
         return (
             <div className={`${className} mb-5`}>
                 <div className="d-flex align-items-center mb-4">
@@ -170,16 +181,24 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                     {renderVerification(type)}
                 </div>
                 {imageField && object[imageField] && <img src={object[imageField] as string} className="img-fluid mb-4" />}
-                {textFields.map((key, i) => renderFieldInfo(i, (labelMap[key] || key) as string, object[key] as string))}
+                {
+                    textFields.map(
+                        (key, i) => renderFieldInfo(
+                            i,
+                            (transformers[key]?.label || key) as string,
+                            transformers[key]?.format ? transformers[key].format(object[key]) : object[key] as string
+                        )
+                    )
+                }
             </div >
         );
     };
 
     return (
         <div className="row">
-            {renderGroupInfo<CertificateIssuer>('issuer', 'col-sm-6', 'Certificate issuer', props.data.issuer, { govRegistration: 'Government Registration' }, ['name', 'govRegistration', 'email', 'url', 'address'], 'imageUrl')}
-            {renderGroupInfo<SignableCertificateRecipient>('recipient', 'col-sm-6', 'Certificate recipient', props.data.recipient, { govId: 'Government ID' }, ['name', 'govId', 'email'])}
-            {renderGroupInfo<SignableCertificateDetails>('details', 'col-sm-6', 'Certificate details', props.data.details, { issuedOn: 'Issued On' }, ['title', 'issuedOn', 'subtitle', 'description'], 'imageUrl')}
+            {renderGroupInfo<CertificateIssuer>('issuer', 'col-sm-6', 'Certificate issuer', props.data.issuer, { govRegistration: { label: 'Government Registration' } }, ['name', 'govRegistration', 'email', 'url', 'address'], 'imageUrl')}
+            {renderGroupInfo<SignableCertificateRecipient>('recipient', 'col-sm-6', 'Certificate recipient', props.data.recipient, { govId: { label: 'Government ID' } }, ['name', 'govId', 'email'])}
+            {renderGroupInfo<SignableCertificateDetails>('details', 'col-sm-6', 'Certificate details', props.data.details, { issuedOn: { label: 'Issued On', format: formatDate } }, ['title', 'issuedOn', 'subtitle', 'description'], 'imageUrl')}
             {renderTxDetails()}
         </div>
     );

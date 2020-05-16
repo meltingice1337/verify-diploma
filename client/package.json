@@ -17,6 +17,7 @@
     "@rehooks/local-storage": "^2.3.0",
     "bitbox-sdk": "^8.11.2",
     "bitcoincashjs-lib": "^3.3.3",
+    "date-fns": "^2.13.0",
     "react": "^16.13.1",
     "react-dnd": "^10.0.2",
     "react-dnd-html5-backend": "^10.0.2",

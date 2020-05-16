@@ -8,6 +8,7 @@ import styles from './VerificationHistory.module.scss';
 import { toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 import { getTxByCertId, TxCertValidation, validateTxCert, decodeTransaction } from '@utils/certificate/Transaction';
 import { Certificate } from '@utils/certificate/Certificate.model';
+import { formatDate } from '@utils/Dates';
 
 export interface VerificationHistoryProps {
     certificate: Certificate;
@@ -17,7 +18,7 @@ interface VerificationStepResult {
     message: string;
     valid: boolean;
     key: string;
-    optionalField?: string;
+    timeField?: string;
 }
 
 type VerificationStepFnResult = [VerificationStepResult | null, boolean];
@@ -31,13 +32,13 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
 
     const { bitbox } = useContext(BitboxContext);
 
-    const renderStep = (text: string, valid: boolean, key: string, optionalField?: string): JSX.Element => (
+    const renderStep = (text: string, valid: boolean, key: string, timeField?: string): JSX.Element => (
         <div className={styles.verificationStep} key={key}>
             <div className={`${styles.verificationStepDetailsWrapper} ${valid ? styles.valid : styles.invalid}`}>
                 <FontAwesomeIcon icon={valid ? 'check' : 'times'} className={styles.icon} />
                 <div className={styles.text}>
                     {text}
-                    {optionalField !== undefined && <p className={styles.optionalField}>{optionalField}</p>}
+                    {timeField !== undefined && <p className={styles.timeField}>{formatDate(timeField)}</p>}
                 </div>
 
             </div>
@@ -81,7 +82,7 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
             }
 
             setTxCertValidation(txCertValidity);
-            return [{ message: 'Certificate transaction issued', valid: true, key: 'cert-tx-created', optionalField: txCertValidity.details?.creationTime || undefined }, true];
+            return [{ message: 'Certificate transaction issued', valid: true, key: 'cert-tx-created', timeField: txCertValidity.details?.creationTime || undefined }, true];
         } else {
             return [{ message: 'Certificate transaction not found', valid: false, key: 'cert-tx-created' }, false];
         }
@@ -105,7 +106,7 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
 
     const verifyCertTxRevoke = async (): Promise<VerificationStepFnResult> => {
         if (txCertValidation?.details?.revoked) {
-            return [{ message: 'Certificate revoked', valid: false, key: 'cert-tx-revoked', optionalField: txCertValidation.details.revocationTime! }, true];
+            return [{ message: 'Certificate revoked', valid: false, key: 'cert-tx-revoked', timeField: txCertValidation.details.revocationTime! }, true];
         }
 
         return [null, true];
@@ -140,7 +141,7 @@ export const VerificationHistory = (props: VerificationHistoryProps): JSX.Elemen
 
     return (
         <div className={styles.verificationSteps}>
-            {verificationSteps.map(vs => renderStep(vs.message, vs.valid, vs.key, vs.optionalField))}
+            {verificationSteps.map(vs => renderStep(vs.message, vs.valid, vs.key, vs.timeField))}
             {renderPlaceholder()}
         </div>
     );
