@@ -16,6 +16,7 @@ import { useRouter } from '@hooks/RouterHook';
 import { readCertificate, toSignableCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 import { Certificate } from '@utils/certificate/Certificate.model';
 import { encodeCertTx, createCertTx } from '@utils/certificate/Transaction';
+import { formatDate } from '@utils/Dates';
 
 export const DashboardIssuer = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);
@@ -40,7 +41,7 @@ export const DashboardIssuer = (): JSX.Element => {
     };
 
     const mapCertData = (cert: Certificate): TableRow<Certificate> => {
-        return { meta: cert, data: [cert.details.title, cert.details.issuedOn.toString(), cert.recipient.name, cert.recipient.email] };
+        return { meta: cert, data: [cert.details.title, formatDate(cert.details.issuedOn.toString()), cert.recipient.name, cert.recipient.email] };
     };
 
     useEffect(() => {

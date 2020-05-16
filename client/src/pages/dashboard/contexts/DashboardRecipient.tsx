@@ -13,6 +13,7 @@ import { Table, TableRow } from '@components/table/Table';
 import { CertificateForRecipient, Certificate } from '@utils/certificate/Certificate.model';
 
 import { readCertificate, signCertificate, toSignableCertificate, downloadCertificate, verifyCertificate } from '@utils/certificate/Certificate';
+import { formatDate } from '@utils/Dates';
 
 export const DashboardRecipient = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);
@@ -30,7 +31,7 @@ export const DashboardRecipient = (): JSX.Element => {
     };
 
     const mapCertData = (cert: Certificate): TableRow<Certificate> => {
-        return { meta: cert, data: [cert.details.title, cert.details.issuedOn.toString(), cert.issuer.name, cert.issuer.email] };
+        return { meta: cert, data: [cert.details.title, formatDate(cert.details.issuedOn.toString()), cert.issuer.name, cert.issuer.email] };
     };
 
     useEffect(() => {
