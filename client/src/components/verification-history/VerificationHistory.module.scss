@@ -1,0 +1,84 @@
+.verificationSteps {
+    display: flex;
+    align-items: center;
+    flex-flow: column;
+
+    .verificationStep {
+        margin-bottom: 4rem;
+        position: relative;
+        display: flex;
+        flex-flow: column;
+        width: 100%;
+
+        &:last-child {
+            margin-bottom: 0;
+            .text {
+                &:after {
+                    content: none;
+                }
+            }
+        }
+
+        .verificationStepDetailsWrapper {
+            display: flex;
+
+            &.valid {
+                color: green;
+            }
+
+            &.invalid {
+                color: red;
+            }
+        }
+
+        .optionalField {
+            margin-top: 0.8rem;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .icon {
+            margin-right: 2rem;
+        }
+
+        .text {
+            width: 100%;
+            text-align: center;
+
+            &:after {
+                content: "";
+                border-left: 0.1rem dashed black;
+                position: absolute;
+                height: 2rem;
+                bottom: -3rem;
+                left: calc(50% + 1.7rem);
+                transform: translateX(-50%);
+            }
+        }
+
+        .spinner {
+            margin: 0 auto;
+            margin-top: 1.6rem;
+
+            &:after {
+                content: " ";
+                display: block;
+                width: 2.4rem;
+                height: 2.4rem;
+                border-radius: 50%;
+                border: 0.1rem solid green;
+                border-color: green transparent green transparent;
+                animation: rotate 1.2s linear infinite;
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    }
+}

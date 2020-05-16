@@ -22,6 +22,7 @@ export interface CertificatePreviewData {
 
 interface CertificatePreviewProps {
     data: CertificatePreviewData;
+    previewOnly?: boolean;
 }
 
 type GroupInfoObject<T> = { [key in keyof Exclude<T, object>]: string };
@@ -62,7 +63,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     });
 
     const renderVerification = (type: GroupInfoType): JSX.Element | null => {
-        if (type !== 'recipient' && type !== 'issuer') {
+        if ((type !== 'recipient' && type !== 'issuer') || props.previewOnly) {
             return null;
         }
 
@@ -82,7 +83,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     };
 
     const renderTxDetails = (): JSX.Element | null => {
-        if (txValidation) {
+        if (txValidation && !props.previewOnly) {
             const renderValidationTag = (): JSX.Element => {
                 if (txValidation.broadcasted && !txValidation.details?.confirmations) {
                     return (
