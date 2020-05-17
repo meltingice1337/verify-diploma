@@ -81,7 +81,8 @@ async function runExpress(db) {
 
     app.get('/address/:addr/balance', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
-        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer)).toArray();
+        const height = (await (await db.collection('blocks')).countDocuments() + 1);
+        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
         const satoshis = utxos.reduce((acc, utxo) => acc + utxo.outs.find(o => o.script.includes(addressBuffer)).value, 0);
         const balance = bitbox.BitcoinCash.toBitcoinCash(satoshis);
         res.json({ balance, satoshis });
@@ -89,7 +90,8 @@ async function runExpress(db) {
 
     app.get('/address/:addr/utxos', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
-        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer)).toArray();
+        const height = (await (await db.collection('blocks')).countDocuments() + 1);
+        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
         const mappedUtxos = utxos.map(utxo => {
             const outIndex = utxo.outs.findIndex(o => o.script.includes(addressBuffer));
             const outSatoshis = utxo.outs[outIndex].value;

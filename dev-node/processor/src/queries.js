@@ -4,10 +4,21 @@
  * @param {string} address 
  * @returns {object[]}
  */
-const getUTXOQuery = (address) => {
+const getUTXOQuery = (address, height) => {
     return [
         { $unwind: '$transactions' },
-        { $match: { 'transactions.outs.script': `76a914${address}88ac` } },
+        {
+            $match: {
+                $expr: {
+                    $cond: [
+                        { $in: ["0000000000000000000000000000000000000000000000000000000000000000", "$transactions.ins.hash"] },
+                        { $lt: ["$height", height - 100] },
+                        true
+                    ]
+                },
+                'transactions.outs.script': `76a914${address}88ac`
+            }
+        },
         {
             $lookup: {
                 from: 'blocks',
