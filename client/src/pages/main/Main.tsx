@@ -15,14 +15,18 @@ import { AES } from '@utils/Crypto';
 
 import { useRouter } from '@hooks/RouterHook';
 
+interface MainLocationState {
+    wallet?: boolean;
+}
+
 const Main = (): JSX.Element | null => {
     const [active, setActive] = useState(0);
     const [pin, setPin] = useState<string>();
     const [mnemonic] = useLocalStorage('wallet');
 
-    const { setWallet } = useContext(WalletContext);
+    const { setWallet, wallet } = useContext(WalletContext);
 
-    const router = useRouter();
+    const router = useRouter<{}, MainLocationState>();
 
     useEffect(() => {
         if (mnemonic && active > 0) {
@@ -30,13 +34,25 @@ const Main = (): JSX.Element | null => {
         }
     }, [mnemonic, active]);
 
+    useEffect(() => {
+        if (router.location.state?.wallet) {
+            setActive(1);
+            router.history.replace(router.location.pathname, undefined);
+        }
+    }, [router]);
+
+    useEffect(() => {
+        if (wallet) {
+            router.push('/dashboard');
+        }
+    }, [wallet]);
+
     const onEnterClick = (): void => {
         if (pin?.length === 4) {
             const decrypted = AES.decrypt(mnemonic!, pin);
 
             if (decrypted) {
                 setWallet(decrypted);
-                router.push('/dashboard');
             } else {
                 toast.error('Invalid pin ! Please try again ...');
             }

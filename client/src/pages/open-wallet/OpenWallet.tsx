@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useContext } from 'react';
+import React, { useState, ChangeEvent, useContext, useEffect } from 'react';
 import PinInput from 'react-pin-input';
 import { toast } from 'react-toastify';
 import { writeStorage } from '@rehooks/local-storage';
@@ -18,7 +18,7 @@ const OpenWallet = (): JSX.Element => {
     const [pin, setPin] = useState<string>();
 
     const { bitbox } = useContext(BitboxContext);
-    const { setWallet } = useContext(WalletContext);
+    const { setWallet, wallet } = useContext(WalletContext);
 
     const router = useRouter();
 
@@ -42,9 +42,14 @@ const OpenWallet = (): JSX.Element => {
             const encWallet = AES.encrypt(mnemonic, pin);
             writeStorage('wallet', encWallet);
             setWallet(mnemonic);
-            router.push('/dashboard');
         }
     };
+
+    useEffect(() => {
+        if (wallet) {
+            router.push('/dashboard');
+        }
+    }, [wallet]);
 
     const renderEnterMnemonic = (): JSX.Element => {
         return (

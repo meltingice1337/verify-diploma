@@ -17,9 +17,9 @@ const Dashboard = (): JSX.Element => {
 
     useEffect(() => {
         if (!wallet) {
-            router.push('/');
+            router.push('/', { wallet: true });
         }
-    }, []);
+    }, [wallet]);
 
     const renderDashboardCtx = (): JSX.Element | null => {
         if (context === 'recipient') {
