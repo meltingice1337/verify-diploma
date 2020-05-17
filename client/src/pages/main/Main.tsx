@@ -42,7 +42,7 @@ const Main = (): JSX.Element | null => {
     }, [router]);
 
     useEffect(() => {
-        if (wallet) {
+        if (wallet && active > 0) {
             router.push('/dashboard');
         }
     }, [wallet]);

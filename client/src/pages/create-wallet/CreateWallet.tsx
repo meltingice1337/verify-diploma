@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent, FormEvent, ChangeEvent, useContext } from 'react';
+import React, { useState, MouseEvent, FormEvent, ChangeEvent, useContext, useEffect } from 'react';
 import PinInput from 'react-pin-input';
 import { writeStorage } from '@rehooks/local-storage';
 import { toast } from 'react-toastify';
@@ -8,21 +8,31 @@ import logo from '../../../public/assets/logo.png';
 import BitboxContext from '@contexts/BitboxContext';
 import WalletContext from '@contexts/WalletContext';
 
+import { useRouter } from '@hooks/RouterHook';
+
 import { generateRandomBetween } from '@utils/Random';
 import { AES } from '@utils/Crypto';
 
 import styles from './CreateWallet.module.scss';
 
 const CreateWallet = (): JSX.Element => {
-
     const { bitbox } = useContext(BitboxContext);
-    const { setWallet } = useContext(WalletContext);
 
     const [activeStep, setActiveStep] = useState(0);
     const [mnemonic] = useState(bitbox.Mnemonic.generate());
     const [worldNumberVerify] = useState({ first: generateRandomBetween(6, 1), second: generateRandomBetween(12, 6) });
     const [verifyForm, setVerifyForm] = useState({ first: '', second: '' });
     const [pin, setPin] = useState<string>();
+
+    const { setWallet, wallet } = useContext(WalletContext);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        if (wallet) {
+            router.push('/dashboard');
+        }
+    }, [wallet]);
 
     const onCopyPassphraseClick = (event: MouseEvent): void => {
         event.preventDefault();

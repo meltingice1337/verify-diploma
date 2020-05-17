@@ -33,10 +33,10 @@ const App = (): JSX.Element => {
     };
 
     // TODO Change this temporary measure
-    // useEffect(() => {
-    //     setWallet('hint lens spread combine guide heart taxi curious oxygen lock advice aerobic');
-    //     // setWallet('hint lens spread combine guide heart taxi curious oxygen lock aerobic advice');
-    // }, []);
+    useEffect(() => {
+        setWallet('hint lens spread combine guide heart taxi curious oxygen lock advice aerobic');
+        // setWallet('hint lens spread combine guide heart taxi curious oxygen lock aerobic advice');
+    }, []);
 
     useEffect(() => {
         if (dashboardContextStorage) {
