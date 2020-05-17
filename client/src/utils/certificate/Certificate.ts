@@ -10,10 +10,11 @@ import { Certificate, CertificateForRecipient, CertificateEntityVerification } f
 import { readFile } from '@utils/File';
 import { extractProperties } from '@utils/Objects';
 
-export const generateCertUUID = (cert: Partial<SignableCertificate>): string => {
+export const generateCertUUID = (cert: Partial<SignableCertificate>, useSha256 = false): string => {
     const random = crypto.randomBytes(32).toString('hex');
     const certStr = JSON.stringify(cert);
-    return crypto.createHash('ripemd160').update(random + certStr).digest('hex');
+    const algorithm = useSha256 ? 'sha256' : 'ripemd160';
+    return crypto.createHash(algorithm).update(random + certStr).digest('hex');
 };
 
 export const toNormalizedJSONCertObj = <T extends object>(obj: T): string => {

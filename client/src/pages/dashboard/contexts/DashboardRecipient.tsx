@@ -15,11 +15,21 @@ import { CertificateForRecipient, Certificate } from '@utils/certificate/Certifi
 import { readCertificate, signCertificate, toSignableCertificate, downloadCertificate, verifyCertificate } from '@utils/certificate/Certificate';
 import { formatDate } from '@utils/Dates';
 
+interface ChallengeForm {
+    challenge: string;
+    signature: string;
+}
+
 export const DashboardRecipient = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);
     const [certificate, setCertificate] = useState<CertificateForRecipient | Certificate>();
     const [certificatesTableData, setCertificatesTableData] = useState<TableRow<Certificate>[]>([]);
     const [certsStorage, setCertsStorage] = useLocalStorage<Certificate[]>('recipient-certificates');
+    const [showModalChallenge, setShowModalChallenge] = useState(false);
+    const [challengeForm, setChallengeForm] = useState({
+        challenge: '',
+        signature: ''
+    });
 
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -39,6 +49,12 @@ export const DashboardRecipient = (): JSX.Element => {
             setCertificatesTableData(certsStorage.map(mapCertData));
         }
     }, [certsStorage]);
+
+    useEffect(() => {
+        if (showModalChallenge) {
+            setChallengeForm({ challenge: '', signature: '' });
+        }
+    }, [showModalChallenge]);
 
     const onFileChange = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
         const file = event.target.files?.[0];
@@ -106,6 +122,22 @@ export const DashboardRecipient = (): JSX.Element => {
         setModalShow(true);
     };
 
+    const onChallengeChange = (event: ChangeEvent<HTMLInputElement>): void => {
+        const challenge = event.target.value;
+        const form: ChallengeForm = {
+            challenge,
+            signature: ''
+        };
+        if (challenge.length === 64) {
+            const challengeBuffer = Buffer.from(challenge, 'hex');
+            const signature = wallet?.account.sign(challengeBuffer).toDER().toString('hex');
+            form.signature = signature;
+        } else if (challenge !== '') {
+            form.signature = 'Invalid signature. Please enter the 64 characters hex challenge received form the challenger !';
+        }
+        setChallengeForm(form);
+    };
+
     const renderModal = (): JSX.Element => {
         return (
             <Modal className="modal-big" shown={modalShow}>
@@ -126,6 +158,27 @@ export const DashboardRecipient = (): JSX.Element => {
         );
     };
 
+    const renderVerifyChallengeModal = (): JSX.Element => {
+        return (
+            <Modal className="modal-fluid" shown={showModalChallenge}>
+                <div className="modal-header delimiter">
+                    Sign challenge
+                    <span className="close" onClick={(): void => setShowModalChallenge(false)} >&times;</span>
+                </div>
+                <div className="modal-body">
+                    <div className="form-group">
+                        <label htmlFor="challenge">Challenge</label>
+                        <input value={challengeForm.challenge} type="text" className="form-control" placeholder="Enter the challenge..." id="challenge" name="challenge" onChange={onChallengeChange} />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="signature">Signature</label>
+                        <textarea value={challengeForm.signature} className="form-control" placeholder="Enter the challenge first" id="signature" name="signature" readOnly rows={10} />
+                    </div>
+                </div>
+            </Modal>
+        );
+    };
+
     return (
         <>
             <h2 className="mb-5">My certificates</h2>
@@ -133,7 +186,7 @@ export const DashboardRecipient = (): JSX.Element => {
                 <div className="d-flex">
                     <button className="btn btn-primary" onClick={onAddCertificate}>Add certificate</button>
                     <input ref={fileRef} type="file" className="form-control-file" name="" id="" style={{ display: 'none' }} onChange={onFileChange} />
-                    <button className="btn btn-secondary ml-2" onClick={onAddCertificate}>Verify challenge</button>
+                    <button className="btn btn-secondary ml-2" onClick={(): void => setShowModalChallenge(true)}>Verify challenge</button>
                 </div>
                 <div className="d-flex mt-3">
                     <div className="table-responsive">
@@ -141,6 +194,7 @@ export const DashboardRecipient = (): JSX.Element => {
                     </div>
                 </div>
             </div>
+            {renderVerifyChallengeModal()}
             {renderModal()}
         </>
     );

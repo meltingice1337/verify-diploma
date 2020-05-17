@@ -1,8 +1,11 @@
-import React, { MouseEvent, useState, useMemo, useEffect, ChangeEvent } from 'react';
+import React, { MouseEvent, useState, useMemo, useEffect, ChangeEvent, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NativeTypes } from 'react-dnd-html5-backend';
 import { toast } from 'react-toastify';
 import { useDrop, DropTargetMonitor } from 'react-dnd';
+
+
+import BitboxContext from '@contexts/BitboxContext';
 
 import logo from '../../../../public/assets/logo.png';
 
@@ -12,19 +15,28 @@ import { Certificate } from '@utils/certificate/Certificate.model';
 import { readCertificate, generateCertUUID } from '@utils/certificate/Certificate';
 import { CertificatePreview } from '@components/certificate-preview/CertificatePreview';
 import { VerificationHistory, VerificationStepResult } from '@components/verification-history/VerificationHistory';
+import { ECDSA } from '@utils/Crypto';
 
-export interface VerifierProps {
+interface VerifierProps {
     onGoToDashboardClick: () => void;
 }
 
-export const Verifier = (props: VerifierProps): JSX.Element => {
+interface ChallengeForm {
+    challenge: string;
+    signature: string;
+    valid: boolean | undefined;
+}
 
+export const Verifier = (props: VerifierProps): JSX.Element => {
     const [certificate, setCertificate] = useState<Certificate>();
     const [verificationSteps, setVerificationSteps] = useState<[VerificationStepResult, boolean][]>();
-    const [challengeForm, setChallengeForm] = useState({
+    const [challengeForm, setChallengeForm] = useState<ChallengeForm>({
         challenge: '',
-        signature: ''
+        signature: '',
+        valid: undefined
     });
+
+    const { bitbox } = useContext(BitboxContext);
 
     const processCertificate = async (file: File): Promise<void> => {
         const cert = await readCertificate(file);
@@ -115,12 +127,20 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
 
     useEffect(() => {
         if (certificate) {
-            setChallengeForm({ ...challengeForm, challenge: generateCertUUID(certificate) });
+            setChallengeForm({ ...challengeForm, challenge: generateCertUUID(certificate, true) });
         }
     }, [certificate]);
 
     const onFormChange = (event: ChangeEvent<HTMLInputElement>): void => {
-        setChallengeForm({ ...challengeForm, [event.target.name]: event.target.value });
+        setChallengeForm({ ...challengeForm, [event.target.name]: event.target.value, valid: undefined });
+    };
+
+    const onValidateChallenge = (): void => {
+        if (challengeForm.challenge === '' || challengeForm.signature === '') {
+            return undefined;
+        }
+        const valid = ECDSA.verifySignature(challengeForm.challenge, challengeForm.signature, certificate!.issuer.verification!.publicKey, bitbox);
+        setChallengeForm({ ...challengeForm, valid });
     };
 
     const renderRecipientChallenge = (): JSX.Element | null => {
@@ -128,6 +148,12 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
             return (
                 <div className="page-content mt-4 full">
                     <div className="p-3">
+                        {
+                            challengeForm.valid !== undefined &&
+                            <div className="row mb-3">
+                                <h3 className={`${styles.challengeValidity} ${challengeForm.valid ? styles.valid : styles.invalid}`}>{challengeForm.valid ? 'Challenge verified' : 'Invalid challenge signature'}</h3>
+                            </div>
+                        }
                         <div className="row align-items-center">
                             Challenge
                             <form className="col row">
@@ -138,7 +164,7 @@ export const Verifier = (props: VerifierProps): JSX.Element => {
                                     <input required type="text" name="signature" className="form-control" placeholder="Recipient's response" value={challengeForm.signature} onChange={onFormChange} />
                                 </div>
                             </form>
-                            <button className="btn btn-primary">Verify</button>
+                            <button className="btn btn-primary" onClick={onValidateChallenge}>Verify</button>
                         </div>
                         <div className="row mt-3">
                             <p>Send the challenge to the recipient and input the recipient`s response</p>

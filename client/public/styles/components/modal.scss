@@ -27,6 +27,10 @@
             border-radius: 0.5rem;
         }
 
+        &.modal-fluid {
+            min-height: auto;
+        }
+
         &.modal-big {
             min-width: 80rem;
             &-xy {
