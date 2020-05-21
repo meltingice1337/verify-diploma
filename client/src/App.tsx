@@ -15,7 +15,7 @@ import { Spinner } from '@components/spinner/Spinner';
 
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
-    const [bitbox] = useState(new BITBOX({ restURL: 'http://localhost:3000/v1/' }));
+    const [bitbox] = useState(new BITBOX());
     const [isLoading, setIsLoading] = useState(false);
     const [dashboardCtx, setDashboardCtx] = useState<DashboardContextType>('issuer');
 

@@ -96,7 +96,7 @@ export const DashboardIssuer = (): JSX.Element => {
 
         const encoded = encodeCertTx(bitbox, cert, 'revoke');
         const tx = await createCertTx(encoded, wallet!, bitbox);
-        const txid = await fetch(`http://localhost:3000/v1/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
+        const txid = await fetch(`http://localhost:44523/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
 
         if (txid) {
             toast.success('Certificate revoked successfully !');

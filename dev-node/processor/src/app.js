@@ -4,6 +4,7 @@ const bitcoin = require('bitcoinjs-lib');
 const { MongoClient, Db } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 
 const { getUTXOQuery, getTXByPartialScriptQuery } = require('./queries');
 
@@ -13,10 +14,9 @@ const { getUTXOQuery, getTXByPartialScriptQuery } = require('./queries');
  */
 async function runZMQ(db) {
     const sock = new zmq.Subscriber
-    sock.connect("tcp://bch-node:3000")
+    sock.connect(process.env.ZEROMQ_URL)
     sock.subscribe("rawblock")
-    sock.subscribe("rawtx")
-    console.log("Subscriber connected to port 3000")
+    console.log(`Subscriber connected to ${process.env.ZEROMQ_URL}`)
 
     for await (const [topic, msg] of sock) {
         const topicStr = topic.toString();
@@ -47,11 +47,6 @@ async function runZMQ(db) {
                 id: block.getId(),
                 height
             });
-        } else if (topicStr === 'rawtx') {
-            const rawTx = msg.toString('hex');
-            console.log({ rawTx })
-            const tx = bitcoin.Transaction.fromHex(rawTx);
-            console.log(tx.getId())
         }
     }
 }
@@ -112,6 +107,39 @@ async function runExpress(db) {
         const bestBlockHeight = await (await db.collection('blocks')).countDocuments();
         const txs = await db.collection('blocks').aggregate(getTXByPartialScriptQuery(req.params.partScript, req.params.inputPK)).toArray();
         res.json(txs.map(tx => ({ ...tx, confirmations: bestBlockHeight - tx.blockHeight + 1 })));
+    });
+
+    app.post('/rawtransactions/sendRawTransaction/:txHex', async (req, res) => {
+        if (!req.params.txHex) {
+            return res.status(400).json({ error: 'No tx hash' });
+        }
+
+        console.log(process.env.RPC_USERNAME, process.env.RPC_PASSWORD, req.params.txHex, process.env.RPC_BASEURL)
+
+        let BCHNodeRPC = axios.create({
+            baseURL: process.env.RPC_BASEURL
+        });
+
+        try {
+            const response = await BCHNodeRPC({
+                method: 'POST',
+                auth: {
+                    username: process.env.RPC_USERNAME,
+                    password: process.env.RPC_PASSWORD
+                },
+                data: {
+                    jsonrpc: "1.0",
+                    id: "sendrawtransaction",
+                    method: "sendrawtransaction",
+                    params: [
+                        req.params.txHex
+                    ]
+                }
+            })
+            return res.json(response.data.result);
+        } catch (e) {
+            return res.status(500).json(e.response.data);
+        }
     });
 
     app.listen(port, () => {
