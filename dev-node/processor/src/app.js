@@ -10,6 +10,11 @@ const { getUTXOQuery, getTXByPartialScriptQuery } = require('./queries');
 
 /**
  * 
+ */
+let block = null;
+
+/**
+ * 
  * @param {Db} db 
  */
 async function runZMQ(db) {
@@ -23,30 +28,9 @@ async function runZMQ(db) {
         console.log({ topicStr })
         if (topicStr === 'rawblock') {
             const rawBlock = msg.toString('hex');
-            const block = bitcoin.Block.fromHex(rawBlock);
-            const blkPrevHash = block.prevHash.toString('hex');
-            const blkMerkleRoot = block.merkleRoot.toString('hex');
-            const tx = block.transactions.map(t => {
-                const tx = new bitcoin.Transaction(t.toHex())
-                return {
-                    ...t,
-                    outs: t.outs.map(o => ({ ...o, script: o.script.toString('hex') })),
-                    ins: t.ins.map(i => ({ ...i, script: i.script.toString('hex'), hash: i.hash.toString('hex') })),
-                    hash: t.getHash(),
-                    id: t.getId(),
-                    hash: t.getHash().toString('hex')
-                }
-            })
-            const height = (await (await db.collection('blocks')).countDocuments() + 1);
-            (await db.createCollection('blocks')).insertOne({
-                ...block,
-                merkleRoot: blkMerkleRoot,
-                prevHash: blkPrevHash,
-                transactions: tx,
-                hash: block.getHash().toString('hex'),
-                id: block.getId(),
-                height
-            });
+            const processedBlock = await block.processBlock(rawBlock);
+            // console.log('new block inc', { processedBlock });
+            db.collection('blocks').insertOne(processedBlock);
         }
     }
 }
@@ -76,26 +60,18 @@ async function runExpress(db) {
 
     app.get('/address/:addr/balance', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
-        const height = (await (await db.collection('blocks')).countDocuments() + 1);
-        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
-        const satoshis = utxos.reduce((acc, utxo) => acc + utxo.outs.find(o => o.script.includes(addressBuffer)).value, 0);
+        const height = await block.getBlockchainHeight();
+        const utxos = await db.collection('utxos').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
+        const satoshis = utxos.reduce((acc, utxo) => acc + utxo.satoshis, 0);
         const balance = bitbox.BitcoinCash.toBitcoinCash(satoshis);
         res.json({ balance, satoshis });
     });
 
     app.get('/address/:addr/utxos', async (req, res) => {
         const addressBuffer = bitcoin.address.fromBase58Check(req.params.addr).hash.toString('hex');
-        const height = (await (await db.collection('blocks')).countDocuments() + 1);
-        const utxos = await db.collection('blocks').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
-        const mappedUtxos = utxos.map(utxo => {
-            const outIndex = utxo.outs.findIndex(o => o.script.includes(addressBuffer));
-            const outSatoshis = utxo.outs[outIndex].value;
-            return {
-                txid: utxo.id,
-                vout: outIndex,
-                satoshis: outSatoshis
-            }
-        });
+        const height = await block.getBlockchainHeight();
+        const utxos = await db.collection('utxos').aggregate(getUTXOQuery(addressBuffer, height)).toArray();
+        const mappedUtxos = utxos.map(utxo => ({ ...utxo, confirmations: height - utxo.height + 1 }));
         res.json({ utxos: mappedUtxos });
     });
 
@@ -152,6 +128,7 @@ async function runExpress(db) {
  * @param {Db} mongoClient 
  */
 async function bootstrap(db) {
+    block = require('./block')(db);
     runZMQ(db);
     runExpress(db);
 }

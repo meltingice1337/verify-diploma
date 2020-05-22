@@ -6,28 +6,18 @@
  */
 const getUTXOQuery = (address, height) => {
     return [
-        { $unwind: '$transactions' },
         {
             $match: {
                 $expr: {
                     $cond: [
-                        { $in: ["0000000000000000000000000000000000000000000000000000000000000000", "$transactions.ins.hash"] },
-                        { $lt: ["$height", height - 100] },
+                        { $eq: ["$coinbase", true] },
+                        { $lte: ["$height", height - 100] },
                         true
                     ]
                 },
-                'transactions.outs.script': `76a914${address}88ac`
+                'address': address
             }
-        },
-        {
-            $lookup: {
-                from: 'blocks',
-                localField: 'transactions.hash',
-                foreignField: 'transactions.ins.hash',
-                as: 'prevTxLink'
-            }
-        }, { $match: { 'prevTxLink.0': { $exists: false } } },
-        { $replaceRoot: { newRoot: '$transactions' } }
+        }
     ]
 }
 

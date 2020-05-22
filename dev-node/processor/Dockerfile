@@ -23,4 +23,4 @@ COPY . .
 
 RUN npm i -g nodemon
 
-CMD [ "nodemon", "./src/app.js" ]
+CMD [ "npm", "start" ]

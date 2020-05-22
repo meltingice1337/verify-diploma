@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "nodemon --exec babel-node src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bitcoin-dot-com/bitcoincashjs2-lib": "^4.1.0",
     "axios": "^0.19.2",
     "bitbox-sdk": "^8.11.2",
     "bitcoinjs-lib": "^5.1.7",
@@ -19,6 +20,9 @@
     "zeromq": "^6.0.0-beta.6"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0"
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@types/axios": "^0.14.0",
+    "@babel/preset-env": "^7.9.6"
   }
 }
