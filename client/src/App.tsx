@@ -13,6 +13,8 @@ import { BitboxProvider } from '@contexts/BitboxContext';
 
 import { Spinner } from '@components/spinner/Spinner';
 
+import { BCH_NETWORK, PROCESSOR_HOST } from '@utils/Constants';
+
 const App = (): JSX.Element => {
     const [walletData, setWalletData] = useState<WalletData>();
     const [bitbox] = useState(new BITBOX());
@@ -24,10 +26,10 @@ const App = (): JSX.Element => {
     const setWallet = async (mnemonic: string): Promise<void> => {
         setIsLoading(true);
         const seed = bitbox.Mnemonic.toSeed(mnemonic);
-        const masterNode = bitbox.HDNode.fromSeed(seed, 'testnet');
+        const masterNode = bitbox.HDNode.fromSeed(seed, BCH_NETWORK);
         const account = masterNode.derivePath('m/44\'/1\'/0\'/0/0') as HDNode;
 
-        const addressDetails = await fetch(`http://localhost:44523/address/${account.getAddress()}/balance`).then(res => res.json());
+        const addressDetails = await fetch(`${PROCESSOR_HOST}/address/${account.getAddress()}/balance`).then(res => res.json());
         setWalletData({ account, addressDetails });
         setIsLoading(false);
     };

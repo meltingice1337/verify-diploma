@@ -4,6 +4,7 @@ import { Certificate } from './Certificate.model';
 import { WalletData } from '@contexts/WalletContext';
 
 import { hashCertificate, toSignableCertificate } from './Certificate';
+import { BCH_NETWORK, PROCESSOR_HOST } from '@utils/Constants';
 
 export const NETWORK_UUID = '22ab1ed2e6090763dc744f';
 
@@ -67,8 +68,8 @@ export const encodeCertTx = (bitbox: BITBOX, certificate: Certificate, type: key
 
 export const createCertTx = async (script: Buffer, wallet: WalletData, bitbox: BITBOX): Promise<string | null> => {
     const address = wallet.account.getAddress();
-    const utxos = await fetch(`http://localhost:44523/address/${address}/utxos`).then(res => res.json());
-    const txBuilder = new bitbox.TransactionBuilder('testnet') as TransactionBuilder;
+    const utxos = await fetch(`${PROCESSOR_HOST}/address/${address}/utxos`).then(res => res.json());
+    const txBuilder = new bitbox.TransactionBuilder(BCH_NETWORK) as TransactionBuilder;
     if (!Array.isArray(utxos)) {
         const utxo = utxos.utxos?.[0];
         if (utxo) {
@@ -124,7 +125,7 @@ export const decodeTransaction = (tx: RawTx, bitbox: BITBOX): DecodedTransaction
 
 export const getTxByCertId = async (certId: string, inputPK?: string): Promise<RawTx[]> => {
     const scriptPart = `${NETWORK_UUID}${certId}`;
-    return await fetch(`http://localhost:44523/transactions/opreturn/${scriptPart}/${inputPK}`).then(res => res.json());
+    return await fetch(`${PROCESSOR_HOST}/transactions/opreturn/${scriptPart}/${inputPK}`).then(res => res.json());
 };
 
 export const validateTxCert = (cert: Certificate, txs: (DecodedTransaction | null)[]): TxCertValidation => {

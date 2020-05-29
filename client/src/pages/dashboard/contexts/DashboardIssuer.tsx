@@ -17,6 +17,7 @@ import { readCertificate, toSignableCertificate, verifyCertificate } from '@util
 import { Certificate } from '@utils/certificate/Certificate.model';
 import { encodeCertTx, createCertTx } from '@utils/certificate/Transaction';
 import { formatDate } from '@utils/Dates';
+import { PROCESSOR_HOST } from '@utils/Constants';
 
 export const DashboardIssuer = (): JSX.Element => {
     const [modalShow, setModalShow] = useState(false);
@@ -96,7 +97,7 @@ export const DashboardIssuer = (): JSX.Element => {
 
         const encoded = encodeCertTx(bitbox, cert, 'revoke');
         const tx = await createCertTx(encoded, wallet!, bitbox);
-        const txid = await fetch(`http://localhost:44523/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
+        const txid = await fetch(`${PROCESSOR_HOST}/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
 
         if (txid) {
             toast.success('Certificate revoked successfully !');

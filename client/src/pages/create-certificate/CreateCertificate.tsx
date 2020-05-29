@@ -17,6 +17,7 @@ import { Certificate, CertificateForRecipient } from '@utils/certificate/Certifi
 import { imageFileToBase64 } from '@utils/Image';
 import { generateSignCertificate, downloadCertificate, toSignableCertificate, signCertificate } from '@utils/certificate/Certificate';
 import { encodeCertTx, createCertTx, getTxByCertId } from '@utils/certificate/Transaction';
+import { PROCESSOR_HOST } from '@utils/Constants';
 
 export interface FormWithErrors<T> {
     value: T;
@@ -184,7 +185,7 @@ const CreateCertificate = (): JSX.Element => {
         const result = encodeCertTx(bitbox, cert, 'create');
         const tx = await createCertTx(result, wallet!, bitbox);
         if (tx) {
-            const txid = await fetch(`http://localhost:44523/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
+            const txid = await fetch(`${PROCESSOR_HOST}/rawtransactions/sendRawTransaction/${tx}`, { method: 'POST' }).then(r => r.json());
             cert.txid = txid;
             cert.final = true;
             downloadCertificate(cert, `${cert.id}-${cert.recipient.email}-${cert.recipient.name}-final`);

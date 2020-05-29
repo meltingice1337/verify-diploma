@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import bcl, { ECSignature } from 'bitcoincashjs-lib';
 import { BITBOX } from 'bitbox-sdk';
 
+import { BCH_NETWORK } from './Constants';
+
 const encryptionAlgorithm = 'aes-256-cbc';
 const keySalt = 'cd672ac4433062662d75';
 
@@ -34,7 +36,7 @@ const verifySignature = (hash: string, signature: string, publicKey: string, bit
         const hashBuffer = Buffer.from(hash, 'hex');
         const publicKeyBuffer = Buffer.from(publicKey, 'hex');
         const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
-        const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
+        const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: BCH_NETWORK });
         return curvePair.verify(hashBuffer, parsedSignatureBuffer);
     } catch (e) {
         // eslint-disable-next-line no-console

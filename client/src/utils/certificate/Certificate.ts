@@ -9,6 +9,7 @@ import { Certificate, CertificateForRecipient, CertificateEntityVerification } f
 
 import { readFile } from '@utils/File';
 import { extractProperties } from '@utils/Objects';
+import { BCH_NETWORK } from '@utils/Constants';
 
 export const generateCertUUID = (cert: Partial<SignableCertificate>, useSha256 = false): string => {
     const random = crypto.randomBytes(32).toString('hex');
@@ -91,7 +92,7 @@ export const verifyCertificate = (verification: CertificateEntityVerification | 
         const publicKeyBuffer = Buffer.from(verification.publicKey, 'hex');
         const signatureBuffer = Buffer.from(verification.signature, 'hex');
         const parsedSignatureBuffer = (bcl as unknown as { ECSignature: { fromDER: (buffer: Buffer) => ECSignature } }).ECSignature.fromDER(signatureBuffer);
-        const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: 'testnet' });
+        const curvePair = bitbox.ECPair.fromPublicKey(publicKeyBuffer, { compressed: true, network: BCH_NETWORK });
         const normalizedCert = toNormalizedJSONCertObj(cert);
         const certHash = crypto.createHash('sha256').update(normalizedCert).digest();
         return curvePair.verify(certHash, parsedSignatureBuffer);
