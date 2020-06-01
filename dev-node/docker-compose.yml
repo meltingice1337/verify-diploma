@@ -4,7 +4,6 @@ services:
         container_name: vd-bch-node
         build: ./bch-node
         volumes: 
-            - ./bch-node/bitcoin:/home/bitcoin
             - ./bch-node/data:/home/.data
     processor:
         container_name: vd-processor
@@ -12,7 +11,7 @@ services:
         ports: 
             - 44523:44523
         volumes:
-            - ./processor:/usr/src/processor
+            - ./processor/src:/usr/src/processor/src
         depends_on:
             - mongo
             - bch-node

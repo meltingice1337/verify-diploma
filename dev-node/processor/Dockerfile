@@ -17,6 +17,8 @@ RUN apk add --no-cache \
 
 COPY package*.json ./
 
+COPY .babelrc ./
+
 RUN npm install
 
 COPY . .
