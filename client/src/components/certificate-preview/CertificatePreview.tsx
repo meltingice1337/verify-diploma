@@ -65,7 +65,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
         );
     });
 
-    const renderVerification = (type: GroupInfoType): JSX.Element | null => {
+    const renderVerificationBadge = (type: GroupInfoType): JSX.Element | null => {
         if ((type !== 'recipient' && type !== 'issuer') || props.previewOnly) {
             return null;
         }
@@ -178,7 +178,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
             <div className={`${className} mb-5`}>
                 <div className="d-flex align-items-center mb-4">
                     <h3>{title}</h3>
-                    {renderVerification(type)}
+                    {renderVerificationBadge(type)}
                 </div>
                 {imageField && object[imageField] && <img src={object[imageField] as string} className="img-fluid mb-4" />}
                 {
