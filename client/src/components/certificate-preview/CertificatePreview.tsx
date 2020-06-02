@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import BitboxContext from '@contexts/BitboxContext';
 
 import { SignableCertificateRecipient, SignableCertificateDetails } from '@utils/certificate/SignableCertificate.model';
-import { CertificateIssuer, Certificate } from '@utils/certificate/Certificate.model';
+import { CertificateIssuer, Certificate, CertificateEntityVerification } from '@utils/certificate/Certificate.model';
 
 import styles from './CertificatePreview.module.scss';
 
@@ -54,11 +54,11 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
             return null;
         }
         return (
-            <div className="row mb-2" key={`${key}-${value}-${i}`}>
+            <div className="row mb-3" key={`${key}-${value}-${i}`}>
                 <div className="col-sm-5">
                     <p className="font-weight-bold text-capitalize">{key}</p>
                 </div>
-                <div className="col-sm-7">
+                <div className="col-sm-7 text-break">
                     {value?.toString()}
                 </div>
             </div>
@@ -139,8 +139,8 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                         <div className="col-sm-5">
                             <p className="font-weight-bold text-capitalize">Transaction Id</p>
                         </div>
-                        <div className="col-sm-7">
-                            <a href={`https://explorer.bitcoin.com/tbch/tx/${props.data.txid}`} target="_blank" rel="noopener noreferrer">Click to check</a>
+                        <div className="col-sm-7 text-break">
+                            {props.data.txid}
                         </div>
                     </div>
                     <div className="row mb-2">
@@ -185,8 +185,8 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
                     textFields.map(
                         (key, i) => renderFieldInfo(
                             i,
-                            (transformers[key]?.label || key) as string,
-                            transformers[key]?.format ? transformers[key].format(object[key]) : object[key] as string
+                            (transformers?.[key]?.label || key) as string,
+                            (transformers?.[key]?.format && object[key]) ? transformers[key].format(object[key]) : object[key] as string
                         )
                     )
                 }
@@ -196,8 +196,8 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
 
     return (
         <div className="row">
-            {renderGroupInfo<CertificateIssuer>('issuer', 'col-sm-6', 'Certificate issuer', props.data.issuer, { govRegistration: { label: 'Government Registration' } }, ['name', 'govRegistration', 'email', 'url', 'address'], 'imageUrl')}
-            {renderGroupInfo<SignableCertificateRecipient>('recipient', 'col-sm-6', 'Certificate recipient', props.data.recipient, { govId: { label: 'Government ID' } }, ['name', 'govId', 'email'])}
+            {renderGroupInfo<CertificateIssuer>('issuer', 'col-sm-6', 'Certificate issuer', props.data.issuer, { govRegistration: { label: 'Government Registration' }, verification: { label: 'Public Key', format: ((v: CertificateEntityVerification): string => v.publicKey) } }, ['verification', 'name', 'govRegistration', 'email', 'url', 'address'], 'imageUrl')}
+            {renderGroupInfo<SignableCertificateRecipient>('recipient', 'col-sm-6', 'Certificate recipient', props.data.recipient, { govId: { label: 'Government ID' }, verification: { label: 'Public Key', format: ((v: CertificateEntityVerification): string => v.publicKey) } }, ['verification', 'name', 'govId', 'email'])}
             {renderGroupInfo<SignableCertificateDetails>('details', 'col-sm-6', 'Certificate details', props.data.details, { issuedOn: { label: 'Issued On', format: formatDate } }, ['title', 'issuedOn', 'subtitle', 'description'], 'imageUrl')}
             {renderTxDetails()}
         </div>
