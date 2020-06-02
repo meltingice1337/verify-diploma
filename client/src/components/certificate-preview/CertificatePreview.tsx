@@ -50,7 +50,7 @@ export const CertificatePreview = (props: CertificatePreviewProps): JSX.Element 
     }, [props.data.final, props.data.id]);
 
     const renderFieldInfo = ((i: number, key: string, value?: string): JSX.Element | null => {
-        if (value === undefined || value === null) {
+        if (value === undefined || value === null || value === '') {
             return null;
         }
         return (
