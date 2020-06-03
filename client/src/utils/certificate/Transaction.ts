@@ -133,7 +133,7 @@ export const validateTxCert = (cert: Certificate, txs: (DecodedTransaction | nul
         return { broadcasted: !!cert.final, validated: false, validIssuer: false };
     }
 
-    const filteredTxs = txs.filter(f => !!f) as DecodedTransaction[];
+    const filteredTxs = txs.filter(f => !!f && f.certId === cert.id) as DecodedTransaction[];
 
     const creationTx = filteredTxs.find(t => t.type === CERTIFICATE_ACTION_TYPE.create);
     const revocationTx = filteredTxs.find(t => t.type === CERTIFICATE_ACTION_TYPE.revoke);
