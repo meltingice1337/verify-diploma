@@ -17,10 +17,7 @@ const processTransaction = (mongoDb, blockHeight) =>
             .map(i => ({ txid: i.hash.toString('hex').match(/.{2}/g).reverse().join(""), vout: i.index }))
 
         for (let spentTx of spentTxs) {
-            console.log({ spentTx })
-            console.log(await mongoDb.collection('utxos').findOne({ txid: spentTx.txid, vout: spentTx.vout }))
-            const deleted = await mongoDb.collection('utxos').findOneAndDelete({ txid: spentTx.txid, vout: spentTx.vout });
-            console.log({ deleted })
+            await mongoDb.collection('utxos').findOneAndDelete({ txid: spentTx.txid, vout: spentTx.vout });
         }
 
         const utxos = tx

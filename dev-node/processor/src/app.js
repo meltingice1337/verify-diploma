@@ -25,11 +25,9 @@ async function runZMQ(db) {
 
     for await (const [topic, msg] of sock) {
         const topicStr = topic.toString();
-        console.log({ topicStr })
         if (topicStr === 'rawblock') {
             const rawBlock = msg.toString('hex');
             const processedBlock = await block.processBlock(rawBlock);
-            // console.log('new block inc', { processedBlock });
             db.collection('blocks').insertOne(processedBlock);
         }
     }
